@@ -1,0 +1,180 @@
+{
+  "properties": {
+    "vertxConfig": {
+      "maxHeaderSize": 16384,
+      "initialSettings": {
+        "maxHeaderListSize": 16384
+      }
+    }
+  },
+  "handler": "_router",
+  "heap": [
+    {
+      "name": "_router",
+      "type": "Router",
+      "config": {
+        "scanInterval": "30 seconds",
+        "directory": "${openig.configDirectory}/routes",
+        "defaultHandler": {
+          "type": "DispatchHandler",
+          "config": {
+            "bindings": [
+              {
+                "condition": "${request.method == 'GET' and request.uri.path == '/'}",
+                "handler": {
+                  "type": "WelcomeHandler"
+                }
+              },
+              {
+                "condition": "${request.uri.path == '/'}",
+                "handler": {
+                  "type": "StaticResponseHandler",
+                  "config": {
+                    "status": 405,
+                    "reason": "Method Not Allowed"
+                  }
+                }
+              },
+              {
+                "handler": {
+                  "type": "StaticResponseHandler",
+                  "config": {
+                    "status": 404,
+                    "reason": "Not Found"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "capture",
+      "type": "CaptureDecorator",
+      "config": {
+        "captureEntity": true
+      }
+    },
+    {
+      "name": "ReverseProxyHandler",
+      "type": "ReverseProxyHandler",
+      "capture": [
+        "request",
+        "response"
+      ],
+      "config": {
+        "vertx": "${vertxConfig}"
+      }
+    },
+    {
+      "name": "ReverseProxyHandlerNoCapture",
+      "type": "ReverseProxyHandler",
+      "comment": "ReverseProxyHandler with no capture decorator configuration",
+      "config": {
+        "vertx": "${vertxConfig}"
+      }
+    },
+    {
+      "name": "JwtSession",
+      "type": "JwtSession"
+    },
+    {
+      "name" : "ForgeRockClientHandler",
+      "type" : "Chain",
+      "config" : {
+        "filters" : [ 
+          "TransactionIdOutboundFilter"
+       ],
+        "handler" : "ClientHandler"
+      },
+      "capture" : [ "response", "request" ]
+    },
+    {
+      "name": "SBATFapiInteractionFilterChain",
+      "type": "ChainOfFilters",
+      "comment": "This filter chain will set the x-fapi-interaction-id (if not provided in the request), and also set the transaction context to the x-fapi-interaction-id value. This means that if the 'TransactionIdOutboundFilter' is specified on any handlers used by the chain the x-fapi-interaction-id value will be passed onward in the X-ForgeRock-TransactionId header",
+      "config" : {
+        "filters": [
+          {
+            "comment": "Add x-fapi-interaction-id header if one was not present in the request",
+            "name": "FapiInteractionIdFilter",
+            "type": "FapiInteractionIdFilter"
+          },
+          {
+            "name": "FapiInteractionIdTracingFilter",
+            "type": "FapiInteractionIdTracingFilter",
+            "comment": "Copy the x-fapi-interaction-id header to TransactionIdContext"
+          },
+          {
+            "comment": "Log any unhandled exceptions, installed after the FapiTransactionIdFilter so that the txId being logged is set to the x-fapi-interaction-id",
+            "name": "SapiLogAttachedExceptionFilter",
+            "type": "SapiLogAttachedExceptionFilter"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FRReverseProxyHandlerNoCapture",
+      "comment": "ReverseProxyHandler for calls to the FR services, with the capture decorator disabled",
+      "type": "Chain",
+      "config": {
+        "filters" : [
+          "TransactionIdOutboundFilter"
+        ],
+        "handler" : "ReverseProxyHandlerNoCapture"
+      }
+    },
+    {
+      "name": "FRReverseProxyHandler",
+      "comment": "ReverseProxyHandler for calls to the FR services",
+      "type": "Chain",
+      "config": {
+        "filters": [
+          "TransactionIdOutboundFilter"
+        ],
+        "handler": "ReverseProxyHandler"
+      }
+    },
+    {
+      "name": "SystemAndEnvSecretStore-IAM",
+      "type": "SystemAndEnvSecretStore",
+      "config": {
+        "format": "PLAIN"
+      }
+    },
+    {
+      "name": "SecretsProvider-AmJWK",
+      "type": "SecretsProvider",
+      "config": {
+        "stores": [
+          {
+            "type": "JwkSetSecretStore",
+            "config": {
+              "jwkUrl": "https://&{identity.platform.fqdn}/am/oauth2/realms/root/realms/&{am.realm}/connect/jwk_uri"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "SecretKeyPropertyFormat-Gateway",
+      "type": "SecretKeyPropertyFormat",
+      "config": {
+        "format": "PLAIN",
+        "algorithm": "AES"
+      }
+    },
+    {
+      "name": "SystemAndEnvSecretStore-Gateway",
+      "type": "SystemAndEnvSecretStore",
+      "config": {
+        "mappings": [{
+          "secretId": "ig.gw.secret",
+          "format": "SecretKeyPropertyFormat-Gateway"
+        }]
+      }
+    }
+  ],
+  "monitor": true
+}

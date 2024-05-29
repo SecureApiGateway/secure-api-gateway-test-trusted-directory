@@ -1,0 +1,32 @@
+{
+  "heap": [
+    {
+      "name": "ClientHandler",
+      "type": "ClientHandler",
+      "capture": "all"
+    },
+    {
+      "name": "MetricsProtectionFilter",
+      "type": "ScriptableFilter",
+      "config": {
+        "type": "application/x-groovy",
+        "file": "BasicAuthResourceServerFilter.groovy",
+        "args": {
+          "realm": "/",
+          "username": "&{ig.metrics.username}",
+          "password": "&{ig.metrics.password}"
+        }
+      }
+    }
+  ],
+  "connectors": [
+    {
+      "port": 8080,
+      "vertx": {
+        "maxInitialLineLength": 8192,
+        "maxHeaderSize": 16384
+      }
+    }
+  ],
+  "mode": "DEVELOPMENT"
+}
