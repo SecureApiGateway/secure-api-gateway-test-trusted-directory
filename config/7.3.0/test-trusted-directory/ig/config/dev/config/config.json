@@ -1,5 +1,8 @@
 {
   "properties": {
+    "testTrustedDirectory": {
+      "issuerName": "&{ig.test.directory.issuer.name|SAPI-G Test Trusted Directory}"
+    },
     "vertxConfig": {
       "maxHeaderSize": 16384,
       "initialSettings": {

@@ -46,7 +46,7 @@
             "type": "application/x-groovy",
             "file": "JwkmsBuildSSA.groovy",
             "args": {
-              "routeArgJwtIssuer": "test-publisher",
+              "routeArgJwtIssuer": "${testTrustedDirectory.issuerName}",
               "routeArgJwtValidity": 300
             }
           }
