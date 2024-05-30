@@ -4,8 +4,8 @@
 *.tgz
 build/
 target/
-secure-api-gateway-test-directory-docker/7.3.0/ig/config/
-secure-api-gateway-test-directory-docker/7.3.0/ig/lib/
-secure-api-gateway-test-directory-docker/7.3.0/ig/scripts/
-secure-api-gateway-test-directory-docker/7.3.0/ig/audit-schemas/
+secure-api-gateway-test-trusted-directory-docker/7.3.0/ig/config/
+secure-api-gateway-test-trusted-directory-docker/7.3.0/ig/lib/
+secure-api-gateway-test-trusted-directory-docker/7.3.0/ig/scripts/
+secure-api-gateway-test-trusted-directory-docker/7.3.0/ig/audit-schemas/
 pom.xml.versionsBackup

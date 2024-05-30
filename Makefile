@@ -1,5 +1,5 @@
 repo := europe-west4-docker.pkg.dev/sbat-gcr-develop/sapig-docker-artifact
-service := sapig-test-directory
+service := sapig-test-trusted-directory
 
 docker: build-java copy-java-dependencies conf
 ifndef tag
@@ -13,10 +13,10 @@ ifndef setlatest
 	$(eval setlatest=false)
 endif
 	@if [ "${setlatest}" = "true" ]; then \
-		docker build secure-api-gateway-test-directory-docker -t ${repo}/securebanking/${service}:${TAG} -t ${repo}/securebanking/${service}:latest; \
+		docker build secure-api-gateway-test-trusted-directory-docker -t ${repo}/securebanking/${service}:${TAG} -t ${repo}/securebanking/${service}:latest; \
 		docker push ${repo}/securebanking/${service} --all-tags; \
     else \
-   		docker build secure-api-gateway-test-directory-docker -t ${repo}/securebanking/${service}:${TAG}; \
+   		docker build secure-api-gateway-test-trusted-directory-docker -t ${repo}/securebanking/${service}:${TAG}; \
    		docker push ${repo}/securebanking/${service}:${TAG}; \
    	fi;
 conf:
@@ -36,9 +36,9 @@ build-java:
 	mvn -U install
 
 copy-java-dependencies:
-	mvn -U dependency:copy-dependencies --projects secure-api-gateway-test-directory-docker -DoutputDirectory=./7.3.0/ig/lib
+	mvn -U dependency:copy-dependencies --projects secure-api-gateway-test-trusted-directory-docker -DoutputDirectory=./7.3.0/ig/lib
 
 clean:
 	mvn clean
 	./bin/config.sh clean
-	rm -rf secure-api-gateway-test-directory-docker/7.3.0/ig/lib
+	rm -rf secure-api-gateway-test-trusted-directory-docker/7.3.0/ig/lib

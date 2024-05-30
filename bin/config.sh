@@ -25,7 +25,7 @@ begins_with_short_option()
 # THE DEFAULTS INITIALIZATION - POSITIONALS
 _positionals=()
 
-_arg_profile="${_PROFILE:-test-directory}"
+_arg_profile="${_PROFILE:-test-trusted-directory}"
 _arg_environment="${_ENVIRONMENT:-dev}"
 _arg_version="${_VERSION:-7.3.0}"
 _arg_ig_mode=${_IGMODE:-development}
@@ -227,7 +227,7 @@ diff_config()
 # chdir to the script root/..
 cd "$script_dir/.."
 PROFILE_ROOT="config/$_arg_version/$_arg_profile"
-DOCKER_ROOT="secure-api-gateway-test-directory-docker/$_arg_version"
+DOCKER_ROOT="secure-api-gateway-test-trusted-directory-docker/$_arg_version"
 
 
 # if [ "$_arg_component" == "all" ]; then
