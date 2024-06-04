@@ -36,6 +36,7 @@
 
     <modules>
         <module>secure-api-gateway-test-trusted-directory-docker</module>
+        <module>secure-api-gateway-test-trusted-directory-ig-extensions</module>
     </modules>
 
     <parent>

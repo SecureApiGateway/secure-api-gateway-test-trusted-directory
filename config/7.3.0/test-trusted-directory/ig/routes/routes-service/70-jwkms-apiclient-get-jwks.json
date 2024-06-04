@@ -1,7 +1,7 @@
 {
-  "name": "71 - API Client Onboarding - Create Certs",
-  "comment": "Test CA - generate TPP WAC and SEAL certificates and private keys",
-  "condition": "${find(request.uri.path, '^/jwkms/apiclient/issuecert')}",
+  "name": "70 - API Client - Retrieve JWKS containing public key data",
+  "comment": "Test CA - hosting the jwks_uri for the ApiClient",
+  "condition": "${find(request.uri.path, '^/jwkms/apiclient/jwks/.+/.+')}",
   "handler": {
     "type": "Chain",
     "config": {
@@ -14,11 +14,9 @@
         "type": "ScriptableHandler",
         "config": {
           "type": "application/x-groovy",
-          "file": "JwkmsIssueCert.groovy",
+          "file": "ApiClientJwksUriHandler.groovy",
           "args": {
-            "softwareJwksService": "${heap['SoftwareJwksService']}",
-            "keySize": 2048,
-            "validityDays": 365
+            "softwareJwksService": "${heap['SoftwareJwksService']}"
           }
         }
       }

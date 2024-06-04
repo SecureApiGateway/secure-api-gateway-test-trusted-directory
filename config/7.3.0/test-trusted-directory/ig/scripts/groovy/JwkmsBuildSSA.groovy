@@ -63,10 +63,9 @@ if (!subjectDNComponents.CN) {
     return response
 }
 
+def org_id = subjectDNComponents.OI
 
-def  organizationalIdentifier = subjectDNComponents.OI
-
-if (!organizationalIdentifier) {
+if (!org_id) {
     message = "No org identifier in cert"
     logger.error(SCRIPT_NAME + message)
     response.status = Status.BAD_REQUEST
@@ -74,19 +73,7 @@ if (!organizationalIdentifier) {
     return response
 }
 
-def oiComponents = organizationalIdentifier.split("-")
-
-if (oiComponents.length != 3) {
-    message = "Wrong number of dashes in OI " + organizationalIdentifier + " - expected 2"
-    logger.error(SCRIPT_NAME + message)
-    response.status = Status.FORBIDDEN
-    response.entity = "{ \"error\":\"" + message + "\"}"
-    return response
-}
-
-def org_id = oiComponents[2]
 def org_name = subjectDNComponents.CN;
-
 
 def payload = [
     "iss": iss,
@@ -104,18 +91,27 @@ def payload = [
     "software_redirect_uris": requestObj.software_redirect_uris,
     "software_policy_uri": requestObj.software_policy_uri,
     "software_logo_uri": requestObj.software_logo_uri,
-    "software_roles": requestObj.software_roles,
-    "software_jwks": requestObj.software_jwks
+    "software_roles": requestObj.software_roles
 ]
 
+// Embed the jwks if it is provided in the request otherwise set the jwks endpoint uri
+if (requestObj.software_jwks) {
+    payload["software_jwks"] = requestObj.software_jwks
+} else {
+    // validate that a JWKS exists
+    if (!softwareJwksService.getPublicSoftwareJwks(org_id, requestObj.software_id)) {
+        response = new Response(Status.BAD_REQUEST)
+        response.headers['Content-Type'] = "application/json"
+        message = "No JWKS exists for org_id: ${org_id} and software_id: ${requestObj.software_id} - " +
+                "Please issue certificates for this software first."
+        logger.error(SCRIPT_NAME + message)
+        response.entity = "{ \"error\":\"" + message + "\"}"
+        return response
+    }
+    payload["software_jwks_endpoint"] = routeArgGetJwksUriPrefix + "/" + org_id + "/" + requestObj.software_id
+}
 
 logger.debug(SCRIPT_NAME + "Built SSA payload " + payload)
 attributes.ssaPayload = payload
 
 next.handle(context,request)
-
-
-
-
-
-
