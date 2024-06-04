@@ -1,0 +1,15 @@
+name: PR - Build and Deploy
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**/README.md'
+jobs:
+  run_pr-template:
+    name: PR - Build and Deploy
+    uses: SecureApiGateway/secure-api-gateway-ci/.github/workflows/reusable-pr.yml@1437-github-actions-test-trusted-dir
+    secrets: inherit
+    with:
+      componentName: secure-api-gateway-test-trusted-directory
+      dockerTag: pr-${{ github.event.number }}
