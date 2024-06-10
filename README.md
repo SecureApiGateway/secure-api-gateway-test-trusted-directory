@@ -10,7 +10,6 @@ deployment can be configured to trust.
 
 | Environment Variable                     | Description                                                                                                                                           | Example Value                                        |
 |------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------|
-| AM_REALM                                 | What realm is being used in the identity cloud                                                                                                        |                                                      |
 | IG_TEST_DIRECTORY_CA_KEYSTORE_PATH       | Relative Path from the IG working directory (`/var/ig`) to the keystore containing the CA key                                                         | /secrets/test-trusted-directory/test-trusted-dir.p12 |
 | IG_TEST_DIRECTORY_CA_KEYSTORE_TYPE       | Keystore type                                                                                                                                         | PKCS12                                               |
 | IG_TEST_DIRECTORY_CA_KEYSTORE_ALIAS      | Alias of key in the keystore to use to sign certs issued. Matches the -alias arg supplied to keytool                                                  | ca                                                   |

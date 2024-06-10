@@ -60,25 +60,6 @@
       }
     },
     {
-      "name": "ReverseProxyHandler",
-      "type": "ReverseProxyHandler",
-      "capture": [
-        "request",
-        "response"
-      ],
-      "config": {
-        "vertx": "${vertxConfig}"
-      }
-    },
-    {
-      "name": "ReverseProxyHandlerNoCapture",
-      "type": "ReverseProxyHandler",
-      "comment": "ReverseProxyHandler with no capture decorator configuration",
-      "config": {
-        "vertx": "${vertxConfig}"
-      }
-    },
-    {
       "name": "JwtSession",
       "type": "JwtSession"
     },
@@ -118,46 +99,10 @@
       }
     },
     {
-      "name": "FRReverseProxyHandlerNoCapture",
-      "comment": "ReverseProxyHandler for calls to the FR services, with the capture decorator disabled",
-      "type": "Chain",
-      "config": {
-        "filters" : [
-          "TransactionIdOutboundFilter"
-        ],
-        "handler" : "ReverseProxyHandlerNoCapture"
-      }
-    },
-    {
-      "name": "FRReverseProxyHandler",
-      "comment": "ReverseProxyHandler for calls to the FR services",
-      "type": "Chain",
-      "config": {
-        "filters": [
-          "TransactionIdOutboundFilter"
-        ],
-        "handler": "ReverseProxyHandler"
-      }
-    },
-    {
       "name": "SystemAndEnvSecretStore-IAM",
       "type": "SystemAndEnvSecretStore",
       "config": {
         "format": "PLAIN"
-      }
-    },
-    {
-      "name": "SecretsProvider-AmJWK",
-      "type": "SecretsProvider",
-      "config": {
-        "stores": [
-          {
-            "type": "JwkSetSecretStore",
-            "config": {
-              "jwkUrl": "https://&{identity.platform.fqdn}/am/oauth2/realms/root/realms/&{am.realm}/connect/jwk_uri"
-            }
-          }
-        ]
       }
     },
     {
