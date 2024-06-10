@@ -37,18 +37,21 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>${bouncy-castle.version}</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk18on</artifactId>
-            <version>${bouncy-castle.version}</version>
         </dependency>
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
         </dependency>
         <!-- Extension Java modules -->
+        <dependency>
+            <groupId>com.forgerock.sapi.gateway</groupId>
+            <artifactId>secure-api-gateway-test-trusted-directory-ig-extensions</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.forgerock.sapi.gateway</groupId>
             <artifactId>secure-api-gateway-ig-extensions</artifactId>

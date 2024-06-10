@@ -110,6 +110,32 @@
           "format": "SecretKeyPropertyFormat-Gateway"
         }]
       }
+    },
+    {
+      "name": "SoftwareJwksService",
+      "type": "SoftwareJwksService",
+      "config": {
+        "caSecretId": "ca",
+        "secretsProvider": {
+          "name": "KeyStoreSecretStore",
+          "type": "KeyStoreSecretStore",
+          "config": {
+            "file": "&{ig.instance.dir}&{ig.test.directory.ca.keystore.path}",
+            "storeType": "&{ig.test.directory.ca.keystore.type}",
+            "storePasswordSecretId": "ig.test.directory.ca.keystore.storepass",
+            "entryPasswordSecretId": "ig.test.directory.ca.keystore.storepass",
+            "secretsProvider": "SystemAndEnvSecretStore-IAM",
+            "mappings": [
+              {
+                "secretId": "ca",
+                "aliases": [
+                  "&{ig.test.directory.ca.keystore.alias}"
+                ]
+              }
+            ]
+          }
+        }
+      }
     }
   ],
   "monitor": true
