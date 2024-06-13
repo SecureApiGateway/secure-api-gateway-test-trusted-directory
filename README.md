@@ -67,7 +67,7 @@ of OAuth2.0 Dynamic Client registration to register a new OAuth2.0 client.
 
 This endpoint requires mTLS, the client needs to supply a transport certificate that belongs to their JWKS.
 
-Make a POST to the `/jwkms/apiclient/genssa ` endpoint supplying a json entity with the following fields:
+Make a POST to the `/jwkms/apiclient/genssa` endpoint supplying a json entity with the following fields:
 ```json
 {
   "software_id": string,
@@ -134,7 +134,7 @@ This endpoint is used to retrieve the JWKS belong to a piece of software. This J
 Trusted Directory. The JWKS can be used by Secure API Gateway to verify signatures for signed JWTs produced by an
 ApiClient that has registered with that JWKS, and to check that the mTLS certificate is mapped to the software.
 
-The JWKS can be retrieved by making a Get request to ` /jwkms/apiclient/jwks/$organisationId/$softwareId`, replacing
+The JWKS can be retrieved by making a Get request to `/jwkms/apiclient/jwks/$organisationId/$softwareId`, replacing
 the organisationId and softwareId path params with valid values.
 
 Example HTTP call:
@@ -144,3 +144,30 @@ Host: ${SAPI_G_HOST}
 ```
 
 The JWKS is returned as a json entity.
+
+### Revoke Certificate
+The certificate revocation functionality removes a certificate from a JWKS. This can be used as part of testing to 
+ensure that SAPI-G rejects requests which use keys that are no longer mapped to the ApiClient's JWKS (for either signing
+or mTLS purposes).
+
+A POST request can be made to `/jwkms/apiclient/jwks/revokecert`, endpoint supplying a json entity with the following fields:
+```json
+{
+  "org_id": string,
+  "software_id": string,
+  "key_id": string
+}
+```
+
+Example HTTP call:
+```http request
+POST /jwkms/apiclient/jwks/revokecert HTTP/1.1
+Host: ${SAPI_G_HOST}
+Content-Type: application/json
+
+{
+    "org_id": "0015800001041REAAY",
+    "software_id": "Y6NjA9TOn3aMm9GaPtLwkp",
+    "key_id": "505ed9dd-768c-476e-b02d-9d60547a8f5e"
+}
+```

@@ -33,6 +33,10 @@ import com.forgerock.sapi.gateway.test.trusted.directory.ca.CertificateOptions;
 
 class SoftwareJwksServiceTest {
 
+    private static final String ORG_ID = "Test-Corp-1234";
+    private static final String ORG_NAME = "Test Corporation";
+    private static final String SOFTWARE_ID = "software-1234";
+
     private final CaCertificateResource caCertificateResource = CaCertificateResource.getInstance();
 
     private SoftwareJwksService softwareJwksService;
@@ -47,33 +51,25 @@ class SoftwareJwksServiceTest {
     void shouldIssueCertificatesForSoftware() {
         final JwsAlgorithm keyAlg = JwsAlgorithm.PS256;
 
-        final String orgId  = "Test-Corp-1234";
-        final String orgName = "Test Corporation";
-        final String softwareId = "software-1234";
-
-        JWKSet softwareJwks = softwareJwksService.issueSoftwareCertificates(orgId, orgName, softwareId, new CertificateOptions(keyAlg, 3096));
+        JWKSet softwareJwks = softwareJwksService.issueSoftwareCertificates(ORG_ID, ORG_NAME, SOFTWARE_ID, new CertificateOptions(keyAlg, 3096));
 
         assertThat(softwareJwks.getJWKsAsList()).hasSize(2);
 
         final JWK signingKey = softwareJwks.findJwk(keyAlg, "sig");
         assertThat(signingKey).isNotNull();
-        CertificateIssuerServiceTest.validateCertIssuedByCa(caCertificateResource.getPublicKey(), orgId, orgName, signingKey);
+        CertificateIssuerServiceTest.validateCertIssuedByCa(caCertificateResource.getPublicKey(), ORG_ID, ORG_NAME, signingKey);
 
         final JWK transportKey = softwareJwks.findJwk(keyAlg, "tls");
         assertThat(transportKey).isNotNull();
-        CertificateIssuerServiceTest.validateCertIssuedByCa(caCertificateResource.getPublicKey(), orgId, orgName, transportKey);
+        CertificateIssuerServiceTest.validateCertIssuedByCa(caCertificateResource.getPublicKey(), ORG_ID, ORG_NAME, transportKey);
     }
 
     @Test
     void shouldGetJwksContainingOnlyPublicKeyDataForSoftware() {
-        final String orgId  = "Test-Corp-1234";
-        final String orgName = "Test Corporation";
-        final String softwareId = "software-1234";
-
-        JWKSet issuedJwks = softwareJwksService.issueSoftwareCertificates(orgId, orgName, softwareId,
+        JWKSet issuedJwks = softwareJwksService.issueSoftwareCertificates(ORG_ID, ORG_NAME, SOFTWARE_ID,
                 new CertificateOptions(JwsAlgorithm.PS256, 3096));
 
-        JWKSet retrievedJwks = softwareJwksService.getPublicSoftwareJwks(orgId, softwareId);
+        JWKSet retrievedJwks = softwareJwksService.getPublicSoftwareJwks(ORG_ID, SOFTWARE_ID);
         final List<JWK> retrievedJwksList = retrievedJwks.getJWKsAsList();
         final List<JWK> issuedJwksList = issuedJwks.getJWKsAsList();
         assertThat(retrievedJwksList.size()).isEqualTo(issuedJwksList.size());
@@ -86,29 +82,48 @@ class SoftwareJwksServiceTest {
     void shouldAppendForSoftwareJwksIfAlreadyExists() {
         final JwsAlgorithm keyAlg = JwsAlgorithm.PS256;
 
-        final String orgId  = "Test-Corp-1234";
-        final String orgName = "Test Corporation";
-        final String softwareId = "software-1234";
-
-        JWKSet softwareJwks = softwareJwksService.issueSoftwareCertificates(orgId, orgName, softwareId, new CertificateOptions(keyAlg, 3096));
+        JWKSet softwareJwks = softwareJwksService.issueSoftwareCertificates(ORG_ID, ORG_NAME, SOFTWARE_ID, new CertificateOptions(keyAlg, 3096));
 
         assertThat(softwareJwks.getJWKsAsList()).hasSize(2);
 
-        JWKSet appendedSoftwareJwks = softwareJwksService.issueSoftwareCertificates(orgId, orgName, softwareId, new CertificateOptions(keyAlg, 3096));
+        JWKSet appendedSoftwareJwks = softwareJwksService.issueSoftwareCertificates(ORG_ID, ORG_NAME, SOFTWARE_ID, new CertificateOptions(keyAlg, 3096));
 
         assertThat(appendedSoftwareJwks.getJWKsAsList()).hasSize(4);
     }
 
     @Test
     void shouldFailToIssueCertificateIfParamIsNull() {
-        final String orgId  = "Test-Corp-1234";
-        final String orgName = "Test Corporation";
-        final String softwareId = "software-1234";
         final CertificateOptions certificateOptions = new CertificateOptions(JwsAlgorithm.PS256, 2048);
 
-        assertThrows(NullPointerException.class, () -> softwareJwksService.issueSoftwareCertificates(null, orgName, softwareId, certificateOptions));
-        assertThrows(NullPointerException.class, () -> softwareJwksService.issueSoftwareCertificates(orgId, null, softwareId, certificateOptions));
-        assertThrows(NullPointerException.class, () -> softwareJwksService.issueSoftwareCertificates(orgId, orgName, null, certificateOptions));
-        assertThrows(NullPointerException.class, () -> softwareJwksService.issueSoftwareCertificates(orgId, orgName, softwareId, null));
+        assertThrows(NullPointerException.class, () -> softwareJwksService.issueSoftwareCertificates(null, ORG_NAME, SOFTWARE_ID, certificateOptions));
+        assertThrows(NullPointerException.class, () -> softwareJwksService.issueSoftwareCertificates(ORG_ID, null, SOFTWARE_ID, certificateOptions));
+        assertThrows(NullPointerException.class, () -> softwareJwksService.issueSoftwareCertificates(ORG_ID, ORG_NAME, null, certificateOptions));
+        assertThrows(NullPointerException.class, () -> softwareJwksService.issueSoftwareCertificates(ORG_ID, ORG_NAME, SOFTWARE_ID, null));
+    }
+
+    @Test
+    void shouldRemoveCertificates() {
+        final JWKSet softwareJwks = softwareJwksService.issueSoftwareCertificates(ORG_ID, ORG_NAME, SOFTWARE_ID,
+                new CertificateOptions(JwsAlgorithm.PS256, 3096));
+
+        final List<JWK> jwks = softwareJwks.getJWKsAsList();
+        assertThat(jwks).hasSize(2);
+
+        final JWK firstJwk = jwks.get(0);
+        final JWK secondJwk = jwks.get(1);
+
+        softwareJwksService.removeCertificate(ORG_ID, SOFTWARE_ID, firstJwk.getKeyId());
+        assertThat(softwareJwksService.getPublicSoftwareJwks(ORG_ID, SOFTWARE_ID).getJWKsAsList()).hasSize(1);
+
+        softwareJwksService.removeCertificate(ORG_ID, SOFTWARE_ID, secondJwk.getKeyId());
+        // No JWKS returned when there are no keys mapped.
+        assertThat(softwareJwksService.getPublicSoftwareJwks(ORG_ID, SOFTWARE_ID)).isNull();
+    }
+
+    @Test
+    void shouldFailToRemoveCertificatesIfParamIsNull() {
+        assertThrows(NullPointerException.class, () -> softwareJwksService.removeCertificate(null, SOFTWARE_ID, "key-123"));
+        assertThrows(NullPointerException.class, () -> softwareJwksService.removeCertificate(ORG_ID, null, "key-123"));
+        assertThrows(NullPointerException.class, () -> softwareJwksService.removeCertificate(ORG_ID, ORG_NAME, null));
     }
 }

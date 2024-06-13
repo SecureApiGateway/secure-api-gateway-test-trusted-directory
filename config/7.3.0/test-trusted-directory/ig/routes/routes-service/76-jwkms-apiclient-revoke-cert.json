@@ -1,0 +1,24 @@
+{
+  "name": "76 - API Client - Revoke certificate",
+  "comment": "Revokes a certificate for an ApiClient, removing it from their JWKS",
+  "condition": "${find(request.uri.path, '^/jwkms/apiclient/jwks/revokecert')}",
+  "handler": {
+    "type": "Chain",
+    "config": {
+      "filters": [
+        "SBATFapiInteractionFilterChain"
+      ],
+      "handler": {
+        "name": "ApiClientRevokeCert",
+        "type": "ScriptableHandler",
+        "config": {
+          "type": "application/x-groovy",
+          "file": "ApiClientRevokeCert.groovy",
+          "args": {
+            "softwareJwksService": "${heap['SoftwareJwksService']}"
+          }
+        }
+      }
+    }
+  }
+}

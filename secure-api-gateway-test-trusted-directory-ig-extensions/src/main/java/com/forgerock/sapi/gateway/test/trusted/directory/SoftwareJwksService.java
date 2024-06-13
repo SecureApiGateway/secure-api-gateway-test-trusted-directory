@@ -62,7 +62,7 @@ public class SoftwareJwksService {
         requireNonNull(organisationName, "organisationName must be provided");
         requireNonNull(softwareId, "softwareId must be provided");
         requireNonNull(certificateOptions, "certificateOptions must be provided");
-        return softwareJwkSets.compute(jwksSetKey(organisationId, softwareId), (cacheKey, existingJwks) -> {
+        return softwareJwkSets.compute(jwkSetKey(organisationId, softwareId), (cacheKey, existingJwks) -> {
             final JWK signingKey = certificateIssuerService.issueSigningCertificateString(organisationId, organisationName, certificateOptions);
             final JWK transportKey = certificateIssuerService.issueTransportCertificate(organisationId, organisationName, certificateOptions);
             if (existingJwks == null) {
@@ -76,12 +76,14 @@ public class SoftwareJwksService {
         });
     }
 
-    private static String jwksSetKey(String organisationId, String softwareId) {
+    private static String jwkSetKey(String organisationId, String softwareId) {
         return organisationId + "-" + softwareId;
     }
 
-    public JWKSet getPublicSoftwareJwks(String orgId, String softwareId) {
-        final JWKSet jwkSet = softwareJwkSets.get(jwksSetKey(orgId, softwareId));
+    public JWKSet getPublicSoftwareJwks(String organisationId, String softwareId) {
+        requireNonNull(organisationId, "organisationId must be provided");
+        requireNonNull(softwareId, "softwareId must be provided");
+        final JWKSet jwkSet = softwareJwkSets.get(jwkSetKey(organisationId, softwareId));
         if (jwkSet != null) {
             // Only return the public key information
             return new JWKSet(jwkSet.getJWKsAsList().stream()
@@ -90,6 +92,22 @@ public class SoftwareJwksService {
                                                     .toList());
         }
         return null;
+    }
+
+    public void removeCertificate(String organisationId, String softwareId, String keyId) {
+        requireNonNull(organisationId, "organisationId must be provided");
+        requireNonNull(softwareId, "softwareId must be provided");
+        requireNonNull(keyId, "keyId must be provided");
+
+        softwareJwkSets.computeIfPresent(jwkSetKey(organisationId, softwareId), (cacheKey, existingJwks) -> {
+            final List<JWK> updatedJwks = existingJwks.findJwks(jwk -> !jwk.getKeyId().equals(keyId)).toList();
+            // Remove the JWKSet from the map if no keys remain
+            if (updatedJwks.isEmpty()) {
+                return null;
+            } else {
+                return new JWKSet(updatedJwks);
+            }
+        });
     }
 
     public static class Heaplet extends GenericHeaplet {
