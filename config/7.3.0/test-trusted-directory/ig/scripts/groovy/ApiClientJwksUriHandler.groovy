@@ -23,6 +23,6 @@ if (!jwks) {
 }
 
 Response response = new Response(Status.OK)
-response.setEntity(jwks.getJWKsAsJsonValue())
+response.setEntity(jwks.toJsonValue())
 
 return response
