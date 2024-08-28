@@ -48,7 +48,7 @@
             "args": {
               "routeArgJwtIssuer": "${testTrustedDirectory.issuerName}",
               "routeArgJwtValidity": 300,
-              "routeArgGetJwksUriPrefix": "https://&{trusteddir.fqdn}/jwkms/apiclient/jwks",
+              "routeArgGetJwksUriPrefix": "http://test-trusted-directory/jwkms/apiclient/jwks",
               "softwareJwksService": "${heap['SoftwareJwksService']}"
             }
           }
