@@ -21,7 +21,7 @@
 
     <groupId>com.forgerock.sapi.gateway</groupId>
     <artifactId>secure-api-gateway-test-trusted-directory</artifactId>
-    <version>3.2.1-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
     <name>secure-api-gateway-test-trusted-directory</name>
@@ -42,12 +42,12 @@
     <parent>
         <groupId>com.forgerock.sapi.gateway</groupId>
         <artifactId>secure-api-gateway-parent</artifactId>
-        <version>3.2.0</version>
+        <version>4.0.0</version>
     </parent>
 
     <properties>
-        <secure-api-gateway.version>3.2.0</secure-api-gateway.version>
-        <openig.version>2024.9.0</openig.version>
+        <secure-api-gateway.version>4.0.0</secure-api-gateway.version>
+        <openig.version>2024.11.0</openig.version>
         <nimbus-jose.version>9.41.1</nimbus-jose.version>
         <bouncy-castle.version>1.78.1</bouncy-castle.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
