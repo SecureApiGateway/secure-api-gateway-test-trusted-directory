@@ -1,0 +1,68 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-trusted-directory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-trusted-directory
+  template:
+    metadata:
+      labels:
+        app: test-trusted-directory
+    spec:
+      securityContext:
+        runAsUser: 11111
+        runAsGroup: 0
+      containers:
+        - name: test-trusted-directory
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          envFrom:
+            - secretRef:
+                name: test-trusted-directory-secrets
+            - configMapRef:
+                name: test-trusted-directory-config
+          volumeMounts:
+            - name: test-trusted-dir-keystore
+              mountPath: /var/ig/secrets/test-trusted-directory
+              readOnly: true
+          image: testdirectory
+          imagePullPolicy: Always
+          livenessProbe:
+            httpGet:
+              path: /kube/liveness
+              port: 8080
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /kube/readiness
+              port: 8080
+            initialDelaySeconds: 5
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              memory: 512Mi
+      volumes:
+        - name: test-trusted-dir-keystore
+          secret:
+            secretName: test-trusted-dir-keystore
+            optional: false
+      tolerations:
+        - key: kubernetes.io/arch
+          operator: Exists
+          effect: NoSchedule
