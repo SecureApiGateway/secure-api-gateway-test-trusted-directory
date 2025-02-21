@@ -1,5 +1,9 @@
 generatorOptions:
   disableNameSuffixHash: true
+images:
+  - name: testdirectory
+    newName: europe-west4-docker.pkg.dev/sbat-gcr-develop/sapig-docker-artifact/securebanking/sapig-test-trusted-directory
+    newTag: latest
 labels:
   - includeSelectors: true
     pairs:
