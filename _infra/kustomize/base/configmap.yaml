@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-trusted-directory-config
+data:
+  IG_TEST_DIRECTORY_ISSUER_NAME: "test-publisher"
+  IG_TEST_DIRECTORY_CA_KEYSTORE_ALIAS: "ca"
+  IG_TEST_DIRECTORY_CA_KEYSTORE_PATH: "/secrets/test-trusted-directory/test-trusted-dir-keystore.p12"
+  IG_TEST_DIRECTORY_CA_KEYSTORE_TYPE: "PKCS12"
+  IG_TEST_DIRECTORY_SIGNING_KEYSTORE_ALIAS: "jwt-signer"
+  IG_TEST_DIRECTORY_SIGNING_KEYSTORE_PATH: "/secrets/test-trusted-directory/test-trusted-dir-keystore.p12"
+  IG_TEST_DIRECTORY_SIGNING_KEYSTORE_TYPE: "PKCS12"
