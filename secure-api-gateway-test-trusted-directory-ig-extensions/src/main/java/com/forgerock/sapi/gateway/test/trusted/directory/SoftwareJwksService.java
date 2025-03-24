@@ -21,6 +21,7 @@ import static org.forgerock.secrets.Purpose.purpose;
 
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,9 +69,7 @@ public class SoftwareJwksService {
             if (existingJwks == null) {
                 return new JWKSet(List.of(signingKey, transportKey));
             } else {
-                final List<JWK> keys = existingJwks.getJWKsAsList();
-                keys.add(signingKey);
-                keys.add(transportKey);
+                final List<JWK> keys = Arrays.asList(signingKey, transportKey);
                 return new JWKSet(keys);
             }
         });

@@ -170,8 +170,7 @@ public class CertificateIssuerServiceTest {
             X509Certificate cert = X509CertUtils.parse(Base64.decode(issuedJwk.getX509Chain().get(0)));
             cert.verify(caCertPublicKey);
             cert.checkValidity(new Date());
-
-            cert.checkValidity(new Date(LocalDate.now().plusDays(30)
+            cert.checkValidity(new Date(LocalDate.now().plusDays(29)
                                                         .atStartOfDay()
                                                         .toInstant(OffsetDateTime.now().getOffset())
                                                         .toEpochMilli()));

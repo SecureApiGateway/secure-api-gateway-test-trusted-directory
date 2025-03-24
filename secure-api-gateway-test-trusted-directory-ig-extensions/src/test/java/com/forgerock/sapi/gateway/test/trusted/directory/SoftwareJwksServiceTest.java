@@ -79,7 +79,7 @@ class SoftwareJwksServiceTest {
     }
 
     @Test
-    void shouldAppendForSoftwareJwksIfAlreadyExists() {
+    void shouldOnlyReturnNewlyCreatedCertsInJwkSet() {
         final JwsAlgorithm keyAlg = JwsAlgorithm.PS256;
 
         JWKSet softwareJwks = softwareJwksService.issueSoftwareCertificates(ORG_ID, ORG_NAME, SOFTWARE_ID, new CertificateOptions(keyAlg, 3096));
@@ -88,7 +88,7 @@ class SoftwareJwksServiceTest {
 
         JWKSet appendedSoftwareJwks = softwareJwksService.issueSoftwareCertificates(ORG_ID, ORG_NAME, SOFTWARE_ID, new CertificateOptions(keyAlg, 3096));
 
-        assertThat(appendedSoftwareJwks.getJWKsAsList()).hasSize(4);
+        assertThat(appendedSoftwareJwks.getJWKsAsList()).hasSize(2);
     }
 
     @Test
