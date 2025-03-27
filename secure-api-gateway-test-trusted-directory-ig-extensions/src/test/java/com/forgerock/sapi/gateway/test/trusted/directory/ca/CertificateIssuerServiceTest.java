@@ -22,7 +22,9 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
@@ -170,10 +172,7 @@ public class CertificateIssuerServiceTest {
             X509Certificate cert = X509CertUtils.parse(Base64.decode(issuedJwk.getX509Chain().get(0)));
             cert.verify(caCertPublicKey);
             cert.checkValidity(new Date());
-            cert.checkValidity(new Date(LocalDate.now().plusDays(29)
-                                                        .atStartOfDay()
-                                                        .toInstant(OffsetDateTime.now().getOffset())
-                                                        .toEpochMilli()));
+            cert.checkValidity(getDateInDaysFromNow(30));
 
             final X500Principal subjectX500Principal = cert.getSubjectX500Principal();
             X500Name x500Name = new X500Name(subjectX500Principal.getName());
@@ -187,6 +186,19 @@ public class CertificateIssuerServiceTest {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to validated cert was issued by CA", e);
         }
+    }
+
+    private static Date getDateInDaysFromNow(int daysFromNow) {
+        // today
+        Calendar date = new GregorianCalendar();
+        // reset hour, minutes, seconds and millis
+        date.set(Calendar.HOUR_OF_DAY, 0);
+        date.set(Calendar.MINUTE, 0);
+        date.set(Calendar.SECOND, 0);
+        date.set(Calendar.MILLISECOND, 0);
+        // next day
+        date.add(Calendar.DAY_OF_MONTH, daysFromNow);
+        return date.getTime();
     }
 
 }
