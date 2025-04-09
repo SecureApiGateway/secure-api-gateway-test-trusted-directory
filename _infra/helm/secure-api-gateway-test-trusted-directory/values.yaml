@@ -31,7 +31,7 @@ deployment:
   livenessProbe:
     initialDelaySeconds: 160
     failureThreshold: 5
-    path: "/actuator/health"
+    path: "/kube/liveness"
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
@@ -43,7 +43,7 @@ deployment:
   readinessProbe:
     failureThreshold: 3
     periodSeconds: 5
-    path: "/actuator/health"
+    path: "/kube/readiness"
     successThreshold: 1
     timeoutSeconds: 5
   # How many pods are to run in the deployment
