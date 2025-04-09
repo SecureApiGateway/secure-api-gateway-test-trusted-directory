@@ -11,3 +11,4 @@ data:
   IG_TEST_DIRECTORY_SIGNING_KEYSTORE_ALIAS: {{ .Values.configmap.igTestDirectorySigningKeystoreAlias }}
   IG_TEST_DIRECTORY_SIGNING_KEYSTORE_PATH: {{ .Values.configmap.igTestDirectorySigningKeystorePath }}
   IG_TEST_DIRECTORY_SIGNING_KEYSTORE_TYPE: {{ .Values.configmap.igTestDirectorySigningKeystoreType }}
+  IG_TEST_DIRECTORY_FQDN: {{ .Values.configmap.igTestDirectoryFQDN }}

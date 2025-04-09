@@ -5,6 +5,7 @@ configmap:
   igTestDirectoryCAKeystoreAlias: "ca"
   igTestDirectoryCAKeystorePath: "/secrets/test-trusted-directory/test-trusted-dir-keystore.p12"
   igTestDirectoryCAKeystoreType: "PKCS12"
+  igTestDirectoryFQDN: "replace-me"
   igTestDirectoryIssuerName: "test-publisher"
   igTestDirectorySigningKeystoreAlias: "jwt-signer"
   igTestDirectorySigningKeystorePath: "/secrets/test-trusted-directory/test-trusted-dir-keystore.p12"
@@ -65,9 +66,9 @@ deployment:
 ingress:
   annotations:
     authTlsSecret: mtls-ca-certs
-  host: example.host
+  host: "replace-me"
   tls:
-    host: example.host
+    host: "replace-me"
     secretName: ttd-tls-cert
 secrets:
   igMetricsPassword: "replace-me"
