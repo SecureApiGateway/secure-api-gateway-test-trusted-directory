@@ -37,7 +37,7 @@ spec:
             - containerPort: {{ .Values.deployment.containerPort }}
           readinessProbe:
             httpGet:
-              path: /actuator/health
+              path: {{ .Values.deployment.readinessProbe.path }}
               port: {{ .Values.deployment.containerPort }}
             periodSeconds: {{ .Values.deployment.readinessProbe.periodSeconds }}
             failureThreshold: {{ .Values.deployment.readinessProbe.failureThreshold }}
@@ -45,7 +45,7 @@ spec:
             timeoutSeconds: {{ .Values.deployment.readinessProbe.timeoutSeconds }}
           livenessProbe:
             httpGet:
-              path: /actuator/health
+              path: {{ .Values.deployment.livenessProbe.path }}
               port: {{ .Values.deployment.containerPort }}
             initialDelaySeconds: {{ .Values.deployment.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.deployment.livenessProbe.periodSeconds }}
