@@ -3,12 +3,12 @@ configmap:
   # Version of the Kubernetes API to use
   apiVersion: "v1"
   igTestDirectoryCAKeystoreAlias: "ca"
-  igTestDirectoryCAKeystorePath: "/secrets/test-trusted-directory/test-trusted-dir-keystore.p12"
+  igTestDirectoryCAKeystorePath: "/secrets/test-trusted-directory/test-trusted-directory-keystore.p12"
   igTestDirectoryCAKeystoreType: "PKCS12"
   igTestDirectoryFQDN: "replace-me"
   igTestDirectoryIssuerName: "test-publisher"
   igTestDirectorySigningKeystoreAlias: "jwt-signer"
-  igTestDirectorySigningKeystorePath: "/secrets/test-trusted-directory/test-trusted-dir-keystore.p12"
+  igTestDirectorySigningKeystorePath: "/secrets/test-trusted-directory/test-trusted-directory-keystore.p12"
   igTestDirectorySigningKeystoreType: "PKCS12"
 deployment:
   # Affinity Configuration
@@ -65,11 +65,11 @@ deployment:
   strategyType: "RollingUpdate"
 ingress:
   annotations:
-    authTlsSecret: mtls-ca-certs
+    authTlsSecret: test-trusted-directory-mtls-ca-certs
   host: "replace-me"
   tls:
     host: "replace-me"
-    secretName: ttd-tls-cert
+    secretName: test-trusted-directory-tls-cert
 secrets:
   igMetricsPassword: "replace-me"
   igMetricsUsername: "replace-me"

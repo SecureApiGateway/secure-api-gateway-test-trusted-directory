@@ -53,7 +53,7 @@ spec:
             successThreshold: {{ .Values.deployment.livenessProbe.successThreshold }}
             timeoutSeconds: {{ .Values.deployment.livenessProbe.timeoutSeconds }}
           volumeMounts:
-            - name: test-trusted-dir-keystore
+            - name: test-trusted-directory-keystore
               mountPath: /var/ig/secrets/test-trusted-directory
               readOnly: true
           env:
@@ -73,9 +73,9 @@ spec:
           resources:
             {{- toYaml .Values.deployment.resources | nindent 12 }}
       volumes:
-        - name: test-trusted-dir-keystore
+        - name: test-trusted-directory-keystore
           secret:
-            secretName: test-trusted-dir-keystore
+            secretName: test-trusted-directory-keystore
             optional: false
       tolerations:
         - key: kubernetes.io/arch
