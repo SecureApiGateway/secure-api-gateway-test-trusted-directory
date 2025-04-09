@@ -1,0 +1,13 @@
+---
+apiVersion: {{ .Values.configmap.apiVersion }}
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-config
+data:
+  IG_TEST_DIRECTORY_ISSUER_NAME: {{ .Values.configmap.igTestDirectoryIssuerName }}
+  IG_TEST_DIRECTORY_CA_KEYSTORE_ALIAS: {{ .Values.configmap.igTestDirectoryCAKeystoreAlias }}
+  IG_TEST_DIRECTORY_CA_KEYSTORE_PATH: {{ .Values.configmap.igTestDirectoryCAKeystorePath }}
+  IG_TEST_DIRECTORY_CA_KEYSTORE_TYPE: {{ .Values.configmap.igTestDirectoryCAKeystoreType }}
+  IG_TEST_DIRECTORY_SIGNING_KEYSTORE_ALIAS: {{ .Values.configmap.igTestDirectorySigningKeystoreAlias }}
+  IG_TEST_DIRECTORY_SIGNING_KEYSTORE_PATH: {{ .Values.configmap.igTestDirectorySigningKeystorePath }}
+  IG_TEST_DIRECTORY_SIGNING_KEYSTORE_TYPE: {{ .Values.configmap.igTestDirectorySigningKeystoreType }}
