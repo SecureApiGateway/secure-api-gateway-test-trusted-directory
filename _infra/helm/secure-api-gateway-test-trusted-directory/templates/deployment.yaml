@@ -6,9 +6,9 @@ metadata:
   labels:
     app: {{ .Chart.Name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.deployment.replicas }}
   strategy:
-    type: {{ .Values.deployment.strategyType}}
+    type: {{ .Values.deployment.strategyType }}
     {{ if eq .Values.deployment.strategyType "RollingUpdate" }}
     rollingUpdate:
       maxSurge: {{ .Values.deployment.rollingUpdate.maxSurge }}
