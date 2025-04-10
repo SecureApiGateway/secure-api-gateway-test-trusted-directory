@@ -33,7 +33,7 @@ spec:
             - configMapRef:
                 name: test-trusted-directory-config
           volumeMounts:
-            - name: test-trusted-dir-keystore
+            - name: test-trusted-directory-keystore
               mountPath: /var/ig/secrets/test-trusted-directory
               readOnly: true
           image: testdirectory
@@ -58,9 +58,9 @@ spec:
             limits:
               memory: 512Mi
       volumes:
-        - name: test-trusted-dir-keystore
+        - name: test-trusted-directory-keystore
           secret:
-            secretName: test-trusted-dir-keystore
+            secretName: test-trusted-directory-keystore
             optional: false
       tolerations:
         - key: kubernetes.io/arch
