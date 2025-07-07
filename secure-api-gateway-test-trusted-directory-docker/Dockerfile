@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-FROM gcr.io/forgerock-io/ig:2025.6.1
+FROM gcr.io/forgerock-io/ig:2025.6.1-fapi
 # Switching back to forgerock user, app will run as this
 USER forgerock
 # Create dir where secrets can be mounted into
