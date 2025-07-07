@@ -23,7 +23,7 @@
     "type": "Chain",
     "config": {
       "filters": [
-        "SBATFapiInteractionFilterChain",
+        "FAPIRSFilterChain",
         {
           "comment": "Add the client's MTLS transport cert to the attributes context",
           "name": "AddCertificateToAttributesContextFilter",

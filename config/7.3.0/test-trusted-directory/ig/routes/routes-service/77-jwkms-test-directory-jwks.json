@@ -27,7 +27,7 @@
     "type": "Chain",
     "config": {
       "filters": [
-        "SBATFapiInteractionFilterChain"
+        "FAPIRSFilterChain"
       ],
       "handler": {
         "name": "JwkSetHandler-TA",

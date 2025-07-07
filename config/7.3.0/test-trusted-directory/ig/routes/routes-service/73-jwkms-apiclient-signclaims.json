@@ -7,7 +7,7 @@
     "type": "Chain",
     "config": {
       "filters": [
-        "SBATFapiInteractionFilterChain"
+        "FAPIRSFilterChain"
       ],
       "handler": {
         "comment": "Sign claims using signing key from incoming JWK set",
