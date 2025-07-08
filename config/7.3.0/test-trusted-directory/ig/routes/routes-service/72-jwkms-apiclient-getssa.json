@@ -23,7 +23,14 @@
     "type": "Chain",
     "config": {
       "filters": [
-        "FAPIRSFilterChain",
+        {
+          "comment": "FAPI Resource Filter Chain",
+          "name": "fapiResourceUnprotectedFilterChain",
+          "type": "FapiResourceUnprotectedFilterChain",
+          "config": {
+            "auditService": "fapiAuditService"
+          }
+        },
         {
           "comment": "Add the client's MTLS transport cert to the attributes context",
           "name": "AddCertificateToAttributesContextFilter",
