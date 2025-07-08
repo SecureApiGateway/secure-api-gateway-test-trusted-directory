@@ -32,8 +32,8 @@
         <logback.version>1.5.16</logback.version>
     </properties>
 
-    <dependencies>
-        <dependency>
+    <dependencyManagement>
+        <dependencies>
             <!-- Force ${logback.version} used by IG 2025.3, as spring-boot-dependencies uses 1.4.14 -->
             <dependency>
                 <groupId>ch.qos.logback</groupId>
@@ -47,6 +47,10 @@
                 <version>${logback.version}</version>
                 <scope>test</scope>
             </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <dependency>
             <groupId>org.forgerock.openig</groupId>
             <artifactId>openig-core</artifactId>
             <scope>provided</scope>
