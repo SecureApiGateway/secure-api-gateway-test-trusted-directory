@@ -1,7 +1,13 @@
+
+import static java.util.Objects.requireNonNull;
+
+import java.security.cert.X509Certificate;
+
 import org.forgerock.http.protocol.*
 import org.forgerock.json.jose.*
 import org.forgerock.json.jose.jwk.store.JwksStore.*
 import org.forgerock.json.JsonValueFunctions.*
+import org.forgerock.openig.fapi.certificate.ClientCertificateFapiContext
 
 import javax.naming.ldap.LdapName
 import javax.naming.ldap.Rdn
@@ -33,6 +39,13 @@ logger.debug(SCRIPT_NAME + "Running...")
 
 logger.debug(SCRIPT_NAME + "Creating SSA")
 
+// Validate args
+requireNonNull(clock)
+requireNonNull(routeArgJwtIssuer)
+requireNonNull(routeArgJwtValidity)
+requireNonNull(routeArgGetJwksUriPrefix)
+requireNonNull(softwareJwksService)
+
 // response object
 response = new Response(Status.OK)
 response.headers['Content-Type'] = "application/json"
@@ -40,13 +53,16 @@ response.headers['Content-Type'] = "application/json"
 def requestObj = request.entity.getJson()
 
 def iss = routeArgJwtIssuer
-def iat = new Date().getTime() / 1000;
+def iat = clock.instant().getEpochSecond();
 def exp = iat + routeArgJwtValidity;
 
 
 // Check we have everything we need from the client certificate
 
-if (!attributes.clientCertificate) {
+X509Certificate certificate = context.as(ClientCertificateFapiContext.class)
+                                     .map(ClientCertificateFapiContext::getClientCertificate)
+                                     .orElse(null);
+if (certificate == null) {
     message = "No client certificate for registration"
     logger.error(SCRIPT_NAME + message)
     response.status = Status.BAD_REQUEST
@@ -54,7 +70,7 @@ if (!attributes.clientCertificate) {
     return response
 }
 
-def subjectDNComponents = CertificateParserHelper.parseDN(attributes.clientCertificate.getSubjectDN().toString())
+def subjectDNComponents = CertificateParserHelper.parseDN(certificate.getSubjectX500Principal().toString())
 if (!subjectDNComponents.CN) {
     message = "No CN in cert"
     logger.error(SCRIPT_NAME + message)
