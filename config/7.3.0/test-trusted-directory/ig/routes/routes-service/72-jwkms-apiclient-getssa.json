@@ -23,19 +23,20 @@
     "type": "Chain",
     "config": {
       "filters": [
-        "SBATFapiInteractionFilterChain",
         {
-          "comment": "Add the client's MTLS transport cert to the attributes context",
-          "name": "AddCertificateToAttributesContextFilter",
-          "type": "AddCertificateToAttributesContextFilter",
+          "comment": "FAPI Resource Filter Chain",
+          "name": "fapiResourceUnprotectedFilterChain",
+          "type": "FapiResourceUnprotectedFilterChain",
           "config": {
-            "certificateRetriever": {
-              "name": "HeaderCertificateRetriever",
-              "type": "HeaderCertificateRetriever",
-              "config": {
-                "certificateHeaderName": "ssl-client-cert"
-              }
-            }
+            "auditService": "fapiAuditService"
+          }
+        },
+        {
+          "comment": "Add the client's MTLS transport cert to the ClientCertificateContext",
+          "name": "ClientCertificateFilter",
+          "type": "ClientCertificateFilter",
+          "config": {
+            "clientCertificate": "${pemCertificate(urlDecode(request.headers['ssl-client-cert'][0]))}"
           }
         },
         {
@@ -46,6 +47,7 @@
             "type": "application/x-groovy",
             "file": "JwkmsBuildSSA.groovy",
             "args": {
+              "clock": "${heap['Clock']}",
               "routeArgJwtIssuer": "${testTrustedDirectory.issuerName}",
               "routeArgJwtValidity": 300,
               "routeArgGetJwksUriPrefix": "https://&{ig.test.directory.fqdn}/jwkms/apiclient/jwks",

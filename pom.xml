@@ -46,8 +46,8 @@
     </parent>
 
     <properties>
-        <secure-api-gateway.version>4.0.4</secure-api-gateway.version>
-        <openig.version>2024.11.0</openig.version>
+        <secure-api-gateway.version>4.0.5-SNAPSHOT</secure-api-gateway.version>
+        <openig.version>2025.6.1</openig.version>
         <nimbus-jose.version>9.41.1</nimbus-jose.version>
         <bouncy-castle.version>1.78.1</bouncy-castle.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
@@ -108,6 +108,17 @@
             </snapshots>
             <releases>
                 <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>forgerock-internal-snapshots</id>
+            <name>ForgeRock Internal Snapshots Repository</name>
+            <url>https://maven.forgerock.org/artifactory/internal-snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
             </releases>
         </repository>
     </repositories>

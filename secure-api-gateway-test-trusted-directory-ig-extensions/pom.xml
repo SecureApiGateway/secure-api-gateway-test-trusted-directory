@@ -29,8 +29,26 @@
 
     <properties>
         <legal.path.header>../legal/LICENSE-HEADER.txt</legal.path.header>
+        <logback.version>1.5.16</logback.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Force ${logback.version} used by IG 2025.3, as spring-boot-dependencies uses 1.4.14 -->
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${logback.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.forgerock.openig</groupId>
@@ -50,6 +68,11 @@
         <dependency>
             <groupId>org.forgerock.openig</groupId>
             <artifactId>openig-openam</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.forgerock.openig</groupId>
+            <artifactId>openig-fapi</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

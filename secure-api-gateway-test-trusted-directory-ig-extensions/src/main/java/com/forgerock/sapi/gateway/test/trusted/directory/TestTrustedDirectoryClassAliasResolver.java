@@ -20,10 +20,13 @@ import java.util.Map;
 
 import org.forgerock.openig.alias.ClassAliasResolver;
 
+import com.forgerock.sapi.gateway.test.trusted.directory.certificate.ClientCertificateFilterHeaplet;
+
 public class TestTrustedDirectoryClassAliasResolver implements ClassAliasResolver {
     private static final Map<String, Class<?>> ALIASES = new HashMap<>();
 
     static {
+        ALIASES.put(ClientCertificateFilterHeaplet.NAME, ClientCertificateFilterHeaplet.class);
         ALIASES.put("SoftwareJwksService", SoftwareJwksService.class);
     }
 

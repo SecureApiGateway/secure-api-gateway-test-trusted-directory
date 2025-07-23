@@ -6,7 +6,14 @@
     "type": "Chain",
     "config": {
       "filters": [
-        "SBATFapiInteractionFilterChain"
+        {
+          "comment": "FAPI Resource Filter Chain",
+          "name": "fapiResourceUnprotectedFilterChain",
+          "type": "FapiResourceUnprotectedFilterChain",
+          "config": {
+            "auditService": "fapiAuditService"
+          }
+        }
       ],
       "handler": {
         "name": "JwkmsIssueCert",
