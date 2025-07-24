@@ -62,7 +62,7 @@
       },
       "capture" : [ "response", "request" ]
     },
-    {    {
+    {
       "name": "fapiAuditService",
       "type": "AuditService",
       "config": {
