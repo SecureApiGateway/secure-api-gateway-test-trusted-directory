@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-FROM gcr.io/forgerock-io/ig/docker-build:2025.9.0-latest-postcommit-fapi
+FROM gcr.io/forgerock-io/ig/docker-build:2025.9.0-latest-postcommit
 # Switching back to forgerock user, app will run as this
 USER forgerock
 # Create dir where secrets can be mounted into
