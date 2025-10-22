@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 
-FROM gcr.io/forgerock-io/ig/docker-build:2025.9.0-latest-postcommit
+ARG base_image=gcr.io/forgerock-io/ig:2025.9.0
+FROM ${base_image}
 # Switching back to forgerock user, app will run as this
 USER forgerock
 # Create dir where secrets can be mounted into
