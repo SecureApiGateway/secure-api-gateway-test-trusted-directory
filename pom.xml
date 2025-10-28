@@ -21,7 +21,7 @@
 
     <groupId>com.forgerock.sapi.gateway</groupId>
     <artifactId>secure-api-gateway-test-trusted-directory</artifactId>
-    <version>5.0.4</version>
+    <version>5.0.5-SNAPSHOT</version>
 
     <packaging>pom</packaging>
     <name>secure-api-gateway-test-trusted-directory</name>
@@ -76,7 +76,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <url>https://github.com/SecureApiGateway/secure-api-gateway-test-trusted-directory.git</url>
-        <tag>v5.0.4</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <repositories>
