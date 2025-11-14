@@ -46,7 +46,6 @@
     </parent>
 
     <properties>
-        <secure-api-gateway.fapi-pep-as.version>5.0.5-SNAPSHOT</secure-api-gateway.fapi-pep-as.version>
         <openig.version>2025.11.0-SNAPSHOT</openig.version>
         <nimbus-jose.version>9.41.1</nimbus-jose.version>
         <bouncy-castle.version>1.78.1</bouncy-castle.version>
@@ -55,6 +54,16 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>${bouncy-castle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk18on</artifactId>
+                <version>${bouncy-castle.version}</version>
+            </dependency>
             <!-- IG BOM -->
             <dependency>
                 <groupId>org.forgerock.openig</groupId>
