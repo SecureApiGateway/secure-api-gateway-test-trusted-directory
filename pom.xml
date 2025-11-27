@@ -19,9 +19,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.forgerock.sapi.gateway</groupId>
+    <parent>
+        <groupId>com.forgerock.sapi.gateway</groupId>
+        <artifactId>secure-api-gateway-parent</artifactId>
+        <version>5.0.6-SNAPSHOT</version>
+    </parent>
+
     <artifactId>secure-api-gateway-test-trusted-directory</artifactId>
-    <version>5.0.5-SNAPSHOT</version>
+    <version>5.0.6-SNAPSHOT</version>
 
     <packaging>pom</packaging>
     <name>secure-api-gateway-test-trusted-directory</name>
@@ -39,45 +44,24 @@
         <module>secure-api-gateway-test-trusted-directory-ig-extensions</module>
     </modules>
 
-    <parent>
-        <groupId>com.forgerock.sapi.gateway</groupId>
-        <artifactId>secure-api-gateway-parent</artifactId>
-        <version>5.0.4-SNAPSHOT</version>
-    </parent>
 
     <properties>
-        <openig.version>2026.3.0-SNAPSHOT</openig.version>
-        <nimbus-jose.version>9.41.1</nimbus-jose.version>
-        <bouncy-castle.version>1.82</bouncy-castle.version>
-        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+        <secure-api-gateway.fapi-pep-as.version>5.0.6-SNAPSHOT</secure-api-gateway.fapi-pep-as.version>
+        <bouncy-castle.version>1.78.1</bouncy-castle.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk18on</artifactId>
-                <version>${bouncy-castle.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcpkix-jdk18on</artifactId>
-                <version>${bouncy-castle.version}</version>
-            </dependency>
-            <!-- IG BOM -->
-            <dependency>
-                <groupId>org.forgerock.openig</groupId>
-                <artifactId>openig-bom</artifactId>
-                <version>${openig.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-            <!-- Third party -->
-            <dependency>
-                <groupId>com.nimbusds</groupId>
-                <artifactId>nimbus-jose-jwt</artifactId>
-                <version>${nimbus-jose.version}</version>
-            </dependency>
+          <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>${bouncy-castle.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk18on</artifactId>
+            <version>${bouncy-castle.version}</version>
+          </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -177,11 +161,6 @@
                             </goals>
                         </execution>
                     </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>${maven-resources-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
