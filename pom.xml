@@ -47,7 +47,7 @@
 
     <properties>
         <secure-api-gateway.fapi-pep-as.version>5.0.6-SNAPSHOT</secure-api-gateway.fapi-pep-as.version>
-        <bouncy-castle.version>1.78.1</bouncy-castle.version>
+        <bouncy-castle.version>1.83</bouncy-castle.version>
     </properties>
 
     <dependencyManagement>
