@@ -47,23 +47,7 @@
 
     <properties>
         <secure-api-gateway.fapi-pep-as.version>5.0.6-SNAPSHOT</secure-api-gateway.fapi-pep-as.version>
-        <bouncy-castle.version>1.78.1</bouncy-castle.version>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-          <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk18on</artifactId>
-            <version>${bouncy-castle.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk18on</artifactId>
-            <version>${bouncy-castle.version}</version>
-          </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <scm>
         <connection>scm:git:${project.scm.url}</connection>
