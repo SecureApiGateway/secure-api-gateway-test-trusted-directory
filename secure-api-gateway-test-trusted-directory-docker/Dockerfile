@@ -21,7 +21,7 @@ USER forgerock
 # Create dir where secrets can be mounted into
 RUN mkdir /var/ig/secrets
 COPY --chown=forgerock:root 7.3.0/ig/bin/import-pem-certs.sh /home/forgerock
-RUN rm -f /opt/ig/lib/bcprov-jdk18on-1.74.jar
+RUN rm -f /opt/ig/lib/bcprov-jdk18on-1.83.jar
 
 
 # Copy all config files into the docker image.
