@@ -1,6 +1,7 @@
 name := secure-api-gateway-test-trusted-directory
 repo := europe-west4-docker.pkg.dev/sbat-gcr-develop/sapig-docker-artifact
 service := sapig-test-trusted-directory
+latesttagversion := latest
 helm_repo := forgerock-helm/secure-api-gateway/${name}/
 
 docker: build-java copy-java-dependencies conf
@@ -14,8 +15,12 @@ ifndef setlatest
 	$(warning no setlatest true|false supplied; false assumed)
 	$(eval setlatest=false)
 endif
+ifndef dockerArgs
+	$(warning no dockerArgs supplied;)
+	$(eval dockerArgs=)
+endif
 	@if [ "${setlatest}" = "true" ]; then \
-		docker build secure-api-gateway-test-trusted-directory-docker -t ${repo}/securebanking/${service}:${TAG} -t ${repo}/securebanking/${service}:latest; \
+		docker build secure-api-gateway-test-trusted-directory-docker -t ${repo}/securebanking/${service}:${TAG} -t ${repo}/securebanking/${service}:${latesttagversion}; \
 		docker push ${repo}/securebanking/${service} --all-tags; \
     else \
    		docker build secure-api-gateway-test-trusted-directory-docker -t ${repo}/securebanking/${service}:${TAG}; \
@@ -35,7 +40,11 @@ endif
 	./bin/config.sh init --env ${env} --igmode $${IG_MODE}
 
 build-java:
-	mvn -U install
+ifndef mavenArgs
+	$(warning no mavenArgs supplied;)
+	$(eval mavenArgs=)
+endif
+	mvn -U install ${mavenArgs};
 
 copy-java-dependencies:
 	mvn -U dependency:copy-dependencies --projects secure-api-gateway-test-trusted-directory-docker -DoutputDirectory=./7.3.0/ig/lib
