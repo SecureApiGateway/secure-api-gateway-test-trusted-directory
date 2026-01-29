@@ -21,7 +21,7 @@
     <parent>
         <groupId>com.forgerock.sapi.gateway</groupId>
         <artifactId>secure-api-gateway-test-trusted-directory</artifactId>
-        <version>5.0.7-SNAPSHOT</version>
+        <version>5.1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>secure-api-gateway-test-trusted-directory-ig-extensions</artifactId>
