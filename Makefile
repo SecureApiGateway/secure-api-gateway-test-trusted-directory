@@ -20,10 +20,10 @@ ifndef dockerArgs
 	$(eval dockerArgs=)
 endif
 	@if [ "${setlatest}" = "true" ]; then \
-		docker build secure-api-gateway-test-trusted-directory-docker -t ${repo}/securebanking/${service}:${TAG} -t ${repo}/securebanking/${service}:${latesttagversion}; \
+		docker build secure-api-gateway-test-trusted-directory-docker ${dockerArgs} -t ${repo}/securebanking/${service}:${TAG} -t ${repo}/securebanking/${service}:${latesttagversion}; \
 		docker push ${repo}/securebanking/${service} --all-tags; \
     else \
-   		docker build secure-api-gateway-test-trusted-directory-docker -t ${repo}/securebanking/${service}:${TAG}; \
+   		docker build secure-api-gateway-test-trusted-directory-docker ${dockerArgs} -t ${repo}/securebanking/${service}:${TAG}; \
    		docker push ${repo}/securebanking/${service}:${TAG}; \
    	fi;
 conf:
