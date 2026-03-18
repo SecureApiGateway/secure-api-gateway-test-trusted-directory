@@ -209,6 +209,7 @@ init_routes_dev(){
   if [ ! -d "$DOCKER_ROOT/ig-local/config/routes" ]; then
     echo "Creating the Directory $DOCKER_ROOT/$1/config/routes"
     mkdir "$DOCKER_ROOT/$1/config/routes"
+    mkdir "$DOCKER_ROOT/$1/config/extra"
   fi
   find "${PROFILE_ROOT}/$1/routes/"*/ -type f -print0 | xargs -0 -I {} cp {} "$DOCKER_ROOT/$1/config/routes/"
 }
