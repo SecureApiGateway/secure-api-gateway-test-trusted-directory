@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright © 2020-2026 ForgeRock AS (obst@forgerock.com)
+    Copyright © 2020-2026 Ping Identity Corporation (obst@forgerock.com)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,26 +24,11 @@
         <artifactId>secure-api-gateway-parent</artifactId>
         <version>5.2.0-SNAPSHOT</version>
     </parent>
-
     <artifactId>secure-api-gateway-test-trusted-directory</artifactId>
-    <version>5.2.0-SNAPSHOT</version>
-
     <packaging>pom</packaging>
     <name>secure-api-gateway-test-trusted-directory</name>
     <description>Secure API Gateway Test Directory Component</description>
     <url>https://github.com/SecureApiGateway/secure-api-gateway-test-trusted-directory.git</url>
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-    </licenses>
-
-    <modules>
-        <module>secure-api-gateway-test-trusted-directory-docker</module>
-        <module>secure-api-gateway-test-trusted-directory-ig-extensions</module>
-    </modules>
-
 
     <properties>
         <secure-api-gateway.fapi-pep-as.version>5.2.0-SNAPSHOT</secure-api-gateway.fapi-pep-as.version>
@@ -68,15 +53,6 @@
             <url>https://maven.forgerock.org/artifactory/community</url>
         </repository>
         <repository>
-            <id>central</id>
-            <name>Central Repository</name>
-            <url>https://repo1.maven.org/maven2</url>
-            <layout>default</layout>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
             <id>forgerock-internal-releases</id>
             <name>ForgeRock Private Releases Repository</name>
             <url>https://maven.forgerock.org/artifactory/internal-releases</url>
@@ -99,54 +75,8 @@
             </releases>
         </repository>
     </repositories>
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>com.mycila</groupId>
-                    <artifactId>license-maven-plugin</artifactId>
-                    <version>${mycila-license-maven-plugin.version}</version>
-                    <configuration>
-                        <licenseSets>
-                            <licenseSet>
-                                <header>${legal.path.header}</header>
-                                <excludes>
-                                    <exclude>**/*.md</exclude>
-                                    <exclude>**/*.yaml</exclude>
-                                    <exclude>Makefile</exclude>
-                                    <exclude>LICENSE</exclude>
-                                    <exclude>bin/**</exclude>
-                                    <exclude>config/**</exclude>
-                                    <exclude>docker/**</exclude>
-                                    <exclude>legal/**</exclude>
-                                    <exclude>postman/**</exclude>
-                                    <exclude>kustomize/**</exclude>
-                                    <exclude>**/.properties</exclude>
-                                    <exclude>**/.java-version</exclude>
-                                </excludes>
-                            </licenseSet>
-                        </licenseSets>
-                        <properties>
-                            <currentYear>${copyright-current-year}</currentYear>
-                            <owner>ForgeRock AS</owner>
-                            <email>obst@forgerock.com</email>
-                        </properties>
-                        <mapping>
-                            <java>SLASHSTAR_STYLE</java>
-                            <pom.xml>XML_STYLE</pom.xml>
-                        </mapping>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <phase>process-sources</phase>
-                            <goals>
-                                <goal>format</goal>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
+    <modules>
+        <module>secure-api-gateway-test-trusted-directory-docker</module>
+        <module>secure-api-gateway-test-trusted-directory-ig-extensions</module>
+    </modules>
 </project>
