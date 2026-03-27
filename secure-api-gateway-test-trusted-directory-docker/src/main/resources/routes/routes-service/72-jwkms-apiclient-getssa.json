@@ -27,9 +27,7 @@
           "comment": "FAPI Resource Filter Chain",
           "name": "fapiResourceUnprotectedFilterChain",
           "type": "FapiResourceUnprotectedFilterChain",
-          "config": {
-            "auditService": "fapiAuditService"
-          }
+          "config": {}
         },
         {
           "comment": "Add the client's MTLS transport cert to the ClientCertificateContext",

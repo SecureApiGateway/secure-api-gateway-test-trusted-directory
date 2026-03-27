@@ -75,17 +75,17 @@
       "capture" : [ "response", "request" ]
     },
     {
-      "name": "fapiAuditService",
+      "name": "AuditService",
       "type": "AuditService",
       "config": {
         "eventHandlers": [
           {
             "class": "org.forgerock.audit.handlers.json.stdout.JsonStdoutAuditEventHandler",
             "config": {
-              "name": "jsonstdout",
+              "name": "access",
               "elasticsearchCompatible": false,
               "topics": [
-                "fapi"
+                "access"
               ]
             }
           }
