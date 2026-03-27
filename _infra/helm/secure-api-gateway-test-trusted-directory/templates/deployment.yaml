@@ -55,7 +55,7 @@ spec:
             timeoutSeconds: {{ .Values.deployment.livenessProbe.timeoutSeconds }}
           volumeMounts:
             - name: test-trusted-directory-keystore
-              mountPath: /var/ig/secrets/test-trusted-directory
+              mountPath: {{ .Values.deployment.ig.instanceDir }}/secrets/test-trusted-directory
               readOnly: true
           env:
             - name: NAMESPACE

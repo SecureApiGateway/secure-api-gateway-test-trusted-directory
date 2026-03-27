@@ -34,7 +34,7 @@ spec:
                 name: test-trusted-directory-config
           volumeMounts:
             - name: test-trusted-directory-keystore
-              mountPath: /var/ig/secrets/test-trusted-directory
+              mountPath: /var/gateway/secrets/test-trusted-directory
               readOnly: true
           image: testdirectory
           imagePullPolicy: Always
