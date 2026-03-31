@@ -78,5 +78,6 @@
     <modules>
         <module>secure-api-gateway-test-trusted-directory-docker</module>
         <module>secure-api-gateway-test-trusted-directory-ig-extensions</module>
+        <module>secure-api-gateway-test-trusted-directory-spring</module>
     </modules>
 </project>

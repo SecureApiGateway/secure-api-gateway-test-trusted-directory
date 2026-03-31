@@ -1,0 +1,28 @@
+server:
+  port: 8080
+
+trusted-directory:
+  issuer-name: ${IG_TEST_DIRECTORY_ISSUER_NAME:SAPI-G Test Trusted Directory}
+  fqdn: ${IG_TEST_DIRECTORY_FQDN:localhost:8080}
+
+  signing:
+    keystore-path: ${IG_TEST_DIRECTORY_SIGNING_KEYSTORE_PATH}
+    keystore-type: ${IG_TEST_DIRECTORY_SIGNING_KEYSTORE_TYPE:PKCS12}
+    keystore-password: ${IG_TEST_DIRECTORY_SIGNING_KEYSTORE_STOREPASS}
+    keystore-key-password: ${IG_TEST_DIRECTORY_SIGNING_KEYSTORE_KEYPASS:${IG_TEST_DIRECTORY_SIGNING_KEYSTORE_STOREPASS:}}
+    key-alias: ${IG_TEST_DIRECTORY_SIGNING_KEYSTORE_ALIAS:jwt-signing}
+
+  ca:
+    keystore-path: ${IG_TEST_DIRECTORY_CA_KEYSTORE_PATH}
+    keystore-type: ${IG_TEST_DIRECTORY_CA_KEYSTORE_TYPE:PKCS12}
+    keystore-password: ${IG_TEST_DIRECTORY_CA_KEYSTORE_STOREPASS}
+    keystore-key-password: ${IG_TEST_DIRECTORY_CA_KEYSTORE_KEYPASS:${IG_TEST_DIRECTORY_CA_KEYSTORE_STOREPASS:}}
+    key-alias: ${IG_TEST_DIRECTORY_CA_KEYSTORE_ALIAS:ca}
+    cert-signing-alg: SHA256withRSA
+
+  storage:
+    file-path: ${IG_TEST_DIRECTORY_STORE_FILE_PATH:/var/data/trusted-directory-jwks.json}
+
+  cert:
+    key-size: 2048
+    validity-days: 365
