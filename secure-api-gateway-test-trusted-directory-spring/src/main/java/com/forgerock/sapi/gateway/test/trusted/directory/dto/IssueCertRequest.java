@@ -17,21 +17,16 @@ package com.forgerock.sapi.gateway.test.trusted.directory.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class IssueCertRequest {
-
-    @JsonProperty("org_id")
-    private String orgId;
-
-    @JsonProperty("org_name")
-    private String orgName;
-
-    @JsonProperty("software_id")
-    private String softwareId;
-
-    public String getOrgId() { return orgId; }
-    public void setOrgId(String orgId) { this.orgId = orgId; }
-    public String getOrgName() { return orgName; }
-    public void setOrgName(String orgName) { this.orgName = orgName; }
-    public String getSoftwareId() { return softwareId; }
-    public void setSoftwareId(String softwareId) { this.softwareId = softwareId; }
+/**
+ * Request body for the {@code POST /jwkms/apiclient/issuecert} endpoint.
+ *
+ * @param orgId      the unique identifier of the organisation owning the software
+ * @param orgName    the display name of the organisation (used as the certificate CN)
+ * @param softwareId optional software identifier; a random UUID is assigned if not provided
+ */
+public record IssueCertRequest(
+        @JsonProperty("org_id") String orgId,
+        @JsonProperty("org_name") String orgName,
+        @JsonProperty("software_id") String softwareId
+) {
 }

@@ -76,8 +76,9 @@
         </repository>
     </repositories>
     <modules>
-        <module>secure-api-gateway-test-trusted-directory-docker</module>
-        <module>secure-api-gateway-test-trusted-directory-ig-extensions</module>
+        <!-- Disabled during migration testing -->
+        <!-- <module>secure-api-gateway-test-trusted-directory-docker</module>-->
+        <!-- <module>secure-api-gateway-test-trusted-directory-ig-extensions</module>-->
         <module>secure-api-gateway-test-trusted-directory-spring</module>
     </modules>
 </project>

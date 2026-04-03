@@ -17,33 +17,30 @@ package com.forgerock.sapi.gateway.test.trusted.directory.ca;
 
 import org.forgerock.json.jose.jws.JwsAlgorithm;
 
-public class CertificateOptions {
+/**
+ * Configuration options for X.509 certificate generation.
+ * <p>
+ * Immutable configuration options for X.509 certificate generation.
+ * <p>
+ * Specifies the JWS algorithm, the key size in bits, and the certificate validity period.
+ * Use the 2-argument constructor for a default validity of {@value DEFAULT_CERT_VALIDITY_DAYS} days.
+ *
+ * @param jwsAlgorithm     the JWS algorithm used to generate the key pair (e.g. {@code PS256}, {@code ES256})
+ * @param keySize          the key size in bits (e.g. 2048 for RSA, 256 for EC P-256)
+ * @param certValidityDays the number of days the certificate should be valid
+ */
+public record CertificateOptions(JwsAlgorithm jwsAlgorithm, int keySize, int certValidityDays) {
 
     private static final int DEFAULT_CERT_VALIDITY_DAYS = 30;
 
-    private final JwsAlgorithm jwsAlgorithm;
-    private final int keySize;
-    private int certValidityDays = DEFAULT_CERT_VALIDITY_DAYS;
-
+    /**
+     * Creates certificate options with the given algorithm and key size,
+     * using the default validity of {@value DEFAULT_CERT_VALIDITY_DAYS} days.
+     *
+     * @param jwsAlgorithm the JWS algorithm used to generate the key pair
+     * @param keySize      the key size in bits
+     */
     public CertificateOptions(JwsAlgorithm jwsAlgorithm, int keySize) {
-        this.jwsAlgorithm = jwsAlgorithm;
-        this.keySize = keySize;
-    }
-
-    public JwsAlgorithm getJwsAlgorithm() {
-        return jwsAlgorithm;
-    }
-
-    public int getKeySize() {
-        return keySize;
-    }
-
-    public CertificateOptions certValidityDays(int certValidityDays) {
-        this.certValidityDays = certValidityDays;
-        return this;
-    }
-
-    public int getCertValidityDays() {
-        return certValidityDays;
+        this(jwsAlgorithm, keySize, DEFAULT_CERT_VALIDITY_DAYS);
     }
 }

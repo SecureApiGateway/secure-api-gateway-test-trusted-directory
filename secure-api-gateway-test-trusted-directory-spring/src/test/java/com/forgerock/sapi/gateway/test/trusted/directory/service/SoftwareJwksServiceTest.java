@@ -16,8 +16,10 @@
 package com.forgerock.sapi.gateway.test.trusted.directory.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -33,7 +35,6 @@ import com.forgerock.sapi.gateway.test.trusted.directory.ca.CaCertificateResourc
 import com.forgerock.sapi.gateway.test.trusted.directory.ca.CertificateIssuerService;
 import com.forgerock.sapi.gateway.test.trusted.directory.ca.CertificateIssuerServiceTest;
 import com.forgerock.sapi.gateway.test.trusted.directory.ca.CertificateOptions;
-import com.forgerock.sapi.gateway.test.trusted.directory.config.TrustedDirectoryProperties;
 
 class SoftwareJwksServiceTest {
 
@@ -57,9 +58,7 @@ class SoftwareJwksServiceTest {
                 caCertificateResource.getCertificate(),
                 caCertificateResource.getPrivateKey(),
                 CaCertificateResource.DEFAULT_CA_CERT_SIGNING_ALG);
-        TrustedDirectoryProperties properties = new TrustedDirectoryProperties();
-        properties.getStorage().setFilePath(storePath);
-        return new SoftwareJwksService(certificateIssuerService, properties, new ObjectMapper());
+        return new SoftwareJwksService(certificateIssuerService, Path.of(storePath), new ObjectMapper());
     }
 
     @Test
@@ -144,5 +143,60 @@ class SoftwareJwksServiceTest {
         assertThrows(NullPointerException.class, () -> softwareJwksService.issueSoftwareCertificates(ORG_ID, null, SOFTWARE_ID, options));
         assertThrows(NullPointerException.class, () -> softwareJwksService.issueSoftwareCertificates(ORG_ID, ORG_NAME, null, options));
         assertThrows(NullPointerException.class, () -> softwareJwksService.issueSoftwareCertificates(ORG_ID, ORG_NAME, SOFTWARE_ID, null));
+    }
+
+    @Test
+    void shouldThrowWhenStorageFileIsCorrupted() throws Exception {
+        Path corruptedFile = tempDir.resolve("corrupted-jwks.json");
+        Files.writeString(corruptedFile, "{this is not valid json!!!");
+
+        assertThatThrownBy(() -> createService(corruptedFile.toString()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Failed to load JWKS store");
+    }
+
+    // ─── extractCertAsPem ────────────────────────────────────────────────────
+
+    @Test
+    void extractCertAsPem_shouldReturnPemForSigKey() throws Exception {
+        JWKSet jwkSet = softwareJwksService.issueSoftwareCertificates(
+                ORG_ID, ORG_NAME, SOFTWARE_ID, new CertificateOptions(JwsAlgorithm.PS256, 2048));
+        String jwksJson = jwkSet.toJsonValue().toString();
+
+        String pem = softwareJwksService.extractCertAsPem(jwksJson, "sig");
+
+        assertThat(pem).contains("-----BEGIN CERTIFICATE-----");
+        assertThat(pem).satisfies(p ->
+                assertThat(p.contains("-----BEGIN RSA PRIVATE KEY-----") || p.contains("-----BEGIN PRIVATE KEY-----")).isTrue());
+    }
+
+    @Test
+    void extractCertAsPem_shouldReturnPemForTlsKey() throws Exception {
+        JWKSet jwkSet = softwareJwksService.issueSoftwareCertificates(
+                ORG_ID, ORG_NAME, SOFTWARE_ID, new CertificateOptions(JwsAlgorithm.PS256, 2048));
+        String jwksJson = jwkSet.toJsonValue().toString();
+
+        String pem = softwareJwksService.extractCertAsPem(jwksJson, "tls");
+
+        assertThat(pem).contains("-----BEGIN CERTIFICATE-----");
+        assertThat(pem).satisfies(p ->
+                assertThat(p.contains("-----BEGIN RSA PRIVATE KEY-----") || p.contains("-----BEGIN PRIVATE KEY-----")).isTrue());
+    }
+
+    @Test
+    void extractCertAsPem_shouldThrowOnInvalidJson() {
+        assertThrows(IllegalArgumentException.class,
+                () -> softwareJwksService.extractCertAsPem("not-valid-json", "sig"));
+    }
+
+    @Test
+    void extractCertAsPem_shouldThrowWhenKeyUseNotFound() throws Exception {
+        JWKSet jwkSet = softwareJwksService.issueSoftwareCertificates(
+                ORG_ID, ORG_NAME, SOFTWARE_ID, new CertificateOptions(JwsAlgorithm.PS256, 2048));
+        String jwksJson = jwkSet.toJsonValue().toString();
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> softwareJwksService.extractCertAsPem(jwksJson, "enc"));
+        assertThat(ex.getMessage()).contains("Couldn't find enc key in JWK set");
     }
 }

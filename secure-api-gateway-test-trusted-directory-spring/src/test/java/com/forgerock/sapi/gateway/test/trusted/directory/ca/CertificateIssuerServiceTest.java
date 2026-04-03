@@ -112,7 +112,7 @@ public class CertificateIssuerServiceTest {
     void shouldRespectCertValidityDays() {
         int validityDays = 90;
         JWK jwk = service.issueSigningCertificate(ORG_ID, ORG_NAME,
-                new CertificateOptions(JwsAlgorithm.PS256, 2048).certValidityDays(validityDays));
+                new CertificateOptions(JwsAlgorithm.PS256, 2048, validityDays));
 
         X509Certificate cert;
         try {

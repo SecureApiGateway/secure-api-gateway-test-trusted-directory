@@ -33,18 +33,22 @@ public class JwkmsDirectoryController {
 
     private final SsaSigningService ssaSigningService;
 
+    /**
+     * Creates the controller with the signing service used to retrieve the directory's public JWKS.
+     *
+     * @param ssaSigningService provides the directory's public JWKS for SSA signature verification
+     */
     public JwkmsDirectoryController(SsaSigningService ssaSigningService) {
         this.ssaSigningService = ssaSigningService;
     }
 
+    /**
+     * Returns the directory's public JWKS, used by the Secure API Gateway to verify SSA signatures.
+     *
+     * @return {@code 200 OK} with the public JWKS JSON
+     */
     @GetMapping(value = "/jwks", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getDirectoryJwks() {
-        try {
-            String json = new com.fasterxml.jackson.databind.ObjectMapper()
-                    .writeValueAsString(ssaSigningService.getPublicJwks().toJsonValue().getObject());
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(json);
-        } catch (Exception e) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<Object> getDirectoryJwks() {
+        return ResponseEntity.ok(ssaSigningService.getPublicJwks().toJsonValue().getObject());
     }
 }

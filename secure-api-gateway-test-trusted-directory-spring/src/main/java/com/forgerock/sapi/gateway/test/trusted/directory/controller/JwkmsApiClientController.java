@@ -15,33 +15,12 @@
  */
 package com.forgerock.sapi.gateway.test.trusted.directory.controller;
 
-import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.security.PrivateKey;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
-
-import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.jose.jwk.JWK;
 import org.forgerock.json.jose.jwk.JWKSet;
-import org.forgerock.json.jose.jwk.RsaJWK;
 import org.forgerock.json.jose.jws.JwsAlgorithm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.forgerock.sapi.gateway.test.trusted.directory.ca.CertificateOptions;
 import com.forgerock.sapi.gateway.test.trusted.directory.config.TrustedDirectoryProperties;
 import com.forgerock.sapi.gateway.test.trusted.directory.dto.IssueCertRequest;
@@ -60,298 +38,183 @@ import com.forgerock.sapi.gateway.test.trusted.directory.dto.RevokeCertRequest;
 import com.forgerock.sapi.gateway.test.trusted.directory.dto.SignClaimsRequest;
 import com.forgerock.sapi.gateway.test.trusted.directory.dto.SsaRequest;
 import com.forgerock.sapi.gateway.test.trusted.directory.service.SoftwareJwksService;
+import com.forgerock.sapi.gateway.test.trusted.directory.service.SsaService;
 import com.forgerock.sapi.gateway.test.trusted.directory.service.SsaSigningService;
 
+/**
+ * REST controller exposing the API client management endpoints under {@code /jwkms/apiclient}.
+ * <p>
+ * Handles certificate issuance, JWKS retrieval, SSA generation, claim signing,
+ * PEM export, and certificate revocation for software clients registered with the test trusted directory.
+ */
 @RestController
 @RequestMapping("/jwkms/apiclient")
 public class JwkmsApiClientController {
 
-    private static final String OID_ORGANIZATIONAL_IDENTIFIER = "2.5.4.97";
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     private final SoftwareJwksService softwareJwksService;
     private final SsaSigningService ssaSigningService;
+    private final SsaService ssaService;
     private final TrustedDirectoryProperties properties;
-    private final ObjectMapper objectMapper;
 
+    /**
+     * Creates the controller with its required service dependencies.
+     *
+     * @param softwareJwksService manages JWKS storage and certificate lifecycle for software clients
+     * @param ssaSigningService   signs SSA JWTs and exposes the directory's public JWKS
+     * @param ssaService          builds and signs SSA JWTs from client certificate and request
+     * @param properties          application properties (issuer name, FQDN, cert defaults)
+     */
     public JwkmsApiClientController(SoftwareJwksService softwareJwksService,
                                      SsaSigningService ssaSigningService,
-                                     TrustedDirectoryProperties properties,
-                                     ObjectMapper objectMapper) {
+                                     SsaService ssaService,
+                                     TrustedDirectoryProperties properties) {
         this.softwareJwksService = softwareJwksService;
         this.ssaSigningService = ssaSigningService;
+        this.ssaService = ssaService;
         this.properties = properties;
-        this.objectMapper = objectMapper;
     }
 
-    // --- Route 71: Issue certificates ---
-
+    /**
+     * Issues a new signing and transport key pair for a software client and returns the full private JWKS.
+     * If no {@code software_id} is provided, a random UUID is assigned.
+     *
+     * @param request contains {@code org_id}, {@code org_name}, and optional {@code software_id}
+     * @return {@code 200 OK} with the private JWKS, or {@code 400} if required fields are missing
+     */
     @PostMapping(value = "/issuecert", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> issueCert(@RequestBody IssueCertRequest request) {
-        if (request.getOrgId() == null || request.getOrgId().isBlank()
-                || request.getOrgName() == null || request.getOrgName().isBlank()) {
-            return badRequest("org_id and org_name are required");
+    public ResponseEntity<Object> issueCert(@RequestBody IssueCertRequest request) {
+        if (request.orgId() == null || request.orgId().isBlank()
+                || request.orgName() == null || request.orgName().isBlank()) {
+            throw new IllegalArgumentException("org_id and org_name are required");
         }
-        String softwareId = (request.getSoftwareId() != null && !request.getSoftwareId().isBlank())
-                ? request.getSoftwareId() : UUID.randomUUID().toString();
+        String softwareId = (request.softwareId() != null && !request.softwareId().isBlank())
+                ? request.softwareId() : UUID.randomUUID().toString();
 
-        CertificateOptions options = new CertificateOptions(JwsAlgorithm.PS256, properties.getCert().getKeySize())
-                .certValidityDays(properties.getCert().getValidityDays());
+        CertificateOptions options = new CertificateOptions(JwsAlgorithm.PS256, properties.cert().keySize(),
+                properties.cert().validityDays());
 
         JWKSet jwkSet = softwareJwksService.issueSoftwareCertificates(
-                request.getOrgId(), request.getOrgName(), softwareId, options);
+                request.orgId(), request.orgName(), softwareId, options);
 
-        try {
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(objectMapper.writeValueAsString(jwkSet.toJsonValue().getObject()));
-        } catch (Exception e) {
-            logger.error("Failed to serialize JWKS", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ResponseEntity.ok(jwkSet.toJsonValue().getObject());
     }
 
-    // --- Route 70: Get software JWKS (public keys only) ---
-
+    /**
+     * Returns the public JWKS (no private key material) for the given organisation and software client.
+     *
+     * @param orgId      the organisation identifier
+     * @param softwareId the software identifier
+     * @return {@code 200 OK} with the public JWKS, or {@code 404} if no JWKS is found
+     * @throws Exception if JWKS serialisation fails (handled as 500 by {@code GlobalExceptionHandler})
+     */
     @GetMapping(value = "/jwks/{orgId}/{softwareId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getSoftwareJwks(@PathVariable String orgId,
+    public ResponseEntity<Object> getSoftwareJwks(@PathVariable String orgId,
                                                    @PathVariable String softwareId) {
         JWKSet jwkSet = softwareJwksService.getPublicSoftwareJwks(orgId, softwareId);
         if (jwkSet == null) {
             return ResponseEntity.notFound().build();
         }
-        try {
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(objectMapper.writeValueAsString(jwkSet.toJsonValue().getObject()));
-        } catch (Exception e) {
-            logger.error("Failed to serialize JWKS", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ResponseEntity.ok(jwkSet.toJsonValue().getObject());
     }
 
-    // --- Route 72: Generate SSA ---
-
+    /**
+     * Generates and signs a Software Statement Assertion (SSA) JWT.
+     * <p>
+     * The organisation identity ({@code org_id}, {@code org_name}) is extracted from the TLS client certificate
+     * provided in the {@code ssl-client-cert} header. The SSA embeds the software's JWKS endpoint or, if a
+     * {@code software_jwks} is supplied in the request body, the JWKS directly.
+     * <p>
+     * Claims construction and certificate parsing are delegated to {@link SsaService}.
+     *
+     * @param certHeader URL-encoded PEM of the client's TLS certificate (from {@code ssl-client-cert} header)
+     * @param request    SSA payload fields (software ID, roles, redirect URIs, etc.)
+     * @return {@code 200 OK} with the compact JWT string, or {@code 400} if the certificate or fields are invalid
+     * @throws Exception if SSA signing fails (handled as 500 by {@code GlobalExceptionHandler})
+     */
     @PostMapping(value = "/getssa", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getSsa(
+    public ResponseEntity<Object> getSsa(
             @RequestHeader(value = "ssl-client-cert", required = false) String certHeader,
-            @RequestBody SsaRequest request) {
+            @RequestBody SsaRequest request) throws Exception {
         if (certHeader == null || certHeader.isBlank()) {
-            return badRequest("No client certificate provided in ssl-client-cert header");
+            throw new IllegalArgumentException("No client certificate provided in ssl-client-cert header");
         }
-
-        X509Certificate cert;
-        try {
-            String pem = URLDecoder.decode(certHeader, StandardCharsets.UTF_8);
-            cert = parsePemCertificate(pem);
-        } catch (Exception e) {
-            logger.error("Failed to parse client certificate", e);
-            return badRequest("Invalid client certificate in ssl-client-cert header");
-        }
-
-        Map<String, String> dn = parseDn(cert.getSubjectX500Principal().getName());
-        String orgId = dn.get("OI");
-        String orgName = dn.get("CN");
-
-        if (orgName == null || orgName.isBlank()) {
-            return badRequest("No CN in cert");
-        }
-        if (orgId == null || orgId.isBlank()) {
-            return badRequest("No org identifier (OID.2.5.4.97) in cert");
-        }
-
-        Map<String, Object> softwareFields = new LinkedHashMap<>();
-        softwareFields.put("software_id", request.getSoftwareId());
-        softwareFields.put("software_client_name", request.getSoftwareClientName());
-        softwareFields.put("software_client_id", request.getSoftwareClientId());
-        softwareFields.put("software_tos_uri", request.getSoftwareTosUri());
-        softwareFields.put("software_client_description", request.getSoftwareClientDescription());
-        softwareFields.put("software_redirect_uris", request.getSoftwareRedirectUris());
-        softwareFields.put("software_policy_uri", request.getSoftwarePolicyUri());
-        softwareFields.put("software_logo_uri", request.getSoftwareLogoUri());
-        softwareFields.put("software_roles", request.getSoftwareRoles());
-
-        if (request.getSoftwareJwks() != null) {
-            softwareFields.put("software_jwks", request.getSoftwareJwks());
-        } else {
-            JWKSet existingJwks = softwareJwksService.getPublicSoftwareJwks(orgId, request.getSoftwareId());
-            if (existingJwks == null) {
-                return badRequest("No JWKS exists for org_id: " + orgId + " and software_id: "
-                        + request.getSoftwareId() + " - Please issue certificates for this software first.");
-            }
-            softwareFields.put("software_jwks_endpoint",
-                    "https://" + properties.getFqdn() + "/jwkms/apiclient/jwks/" + orgId + "/" + request.getSoftwareId());
-        }
-
-        try {
-            long iat = Instant.now().getEpochSecond();
-            Map<String, Object> claims = new LinkedHashMap<>();
-            claims.put("iss", properties.getIssuerName());
-            claims.put("iat", iat);
-            claims.put("exp", iat + 300L);
-            claims.put("org_id", orgId);
-            claims.put("org_name", orgName);
-            claims.put("org_status", "Active");
-            claims.put("software_mode", "TEST");
-            claims.putAll(softwareFields);
-
-            String jwt = ssaSigningService.sign(claims);
-            return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(jwt);
-        } catch (Exception e) {
-            logger.error("Failed to sign SSA", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\":\"Failed to sign SSA\"}");
-        }
+        String jwt = ssaService.generateSsa(certHeader, request);
+        return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(jwt);
     }
 
-    // --- Route 73: Sign claims ---
-
+    /**
+     * Signs the provided claims using the signing key ({@code use=sig}) found in the provided JWKS.
+     * The resulting JWT uses PS256 and includes the key's {@code kid} in the header.
+     *
+     * @param request contains the {@code claims} map and the {@code jwks} holding the private signing key
+     * @return {@code 200 OK} with the compact JWT string, or {@code 400} if the payload is invalid
+     * @throws Exception if JWT signing fails (handled as 500 by {@code GlobalExceptionHandler})
+     */
     @PostMapping(value = "/signclaims", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> signClaims(@RequestBody SignClaimsRequest request) {
-        if (request.getClaims() == null) {
-            return badRequest("No claims payload in request");
+    public ResponseEntity<Object> signClaims(@RequestBody SignClaimsRequest request) throws Exception {
+        if (request.claims() == null) {
+            throw new IllegalArgumentException("No claims payload in request");
         }
-        if (request.getJwks() == null) {
-            return badRequest("No jwks in request");
+        if (request.jwks() == null) {
+            throw new IllegalArgumentException("No jwks in request");
         }
 
         JWKSet jwks;
         try {
-            jwks = JWKSet.parse(new JsonValue(request.getJwks()));
+            jwks = JWKSet.parse(new JsonValue(request.jwks()));
         } catch (Exception e) {
-            return badRequest("Couldn't parse request body as JWK set");
+            throw new IllegalArgumentException("Couldn't parse request body as JWK set", e);
         }
 
         JWK sigKey = jwks.getJWKsAsList().stream()
                 .filter(k -> "sig".equals(k.getUse()))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException("Couldn't find signing key (use=sig) in JWK set"));
 
-        if (sigKey == null) {
-            return badRequest("Couldn't find signing key (use=sig) in JWK set");
-        }
-
-        try {
-            String jwt = ssaSigningService.signClaims(request.getClaims(), sigKey);
-            return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(jwt);
-        } catch (Exception e) {
-            logger.error("Failed to sign claims", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\":\"Failed to sign claims\"}");
-        }
+        String jwt = ssaSigningService.signClaims(request.claims(), sigKey);
+        return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(jwt);
     }
 
-    // --- Route 74: Get TLS cert as PEM ---
-
+    /**
+     * Extracts the TLS certificate chain and private key from the provided JWKS and returns them in PEM format.
+     *
+     * @param jwksJson the JSON body of the JWKS containing a key with {@code use=tls}
+     * @return {@code 200 OK} with the PEM-encoded certificate chain and private key, or {@code 400} on invalid input
+     * @throws Exception if PEM conversion fails (handled as 500 by {@code GlobalExceptionHandler})
+     */
     @PostMapping(value = "/gettlscert", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getTlsCert(@RequestBody String jwksJson) {
-        return getCertAsPem(jwksJson, "tls");
+    public ResponseEntity<String> getTlsCert(@RequestBody String jwksJson) throws Exception {
+        return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(softwareJwksService.extractCertAsPem(jwksJson, "tls"));
     }
 
-    // --- Route 75: Get signing cert as PEM ---
-
+    /**
+     * Extracts the signing certificate chain and private key from the provided JWKS and returns them in PEM format.
+     *
+     * @param jwksJson the JSON body of the JWKS containing a key with {@code use=sig}
+     * @return {@code 200 OK} with the PEM-encoded certificate chain and private key, or {@code 400} on invalid input
+     * @throws Exception if PEM conversion fails (handled as 500 by {@code GlobalExceptionHandler})
+     */
     @PostMapping(value = "/getsigcert", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getSigCert(@RequestBody String jwksJson) {
-        return getCertAsPem(jwksJson, "sig");
+    public ResponseEntity<String> getSigCert(@RequestBody String jwksJson) throws Exception {
+        return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(softwareJwksService.extractCertAsPem(jwksJson, "sig"));
     }
 
-    // --- Route 76: Revoke certificate ---
-
+    /**
+     * Revokes (removes) a certificate from a software client's JWKS by key ID.
+     * If the JWKS becomes empty after removal, the software's entry is deleted entirely.
+     *
+     * @param request contains {@code org_id}, {@code software_id}, and the {@code key_id} to revoke
+     * @return {@code 200 OK} on success, or {@code 400} if any required field is missing
+     */
     @PostMapping(value = "/jwks/revokecert", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> revokeCert(@RequestBody RevokeCertRequest request) {
-        if (request.getOrgId() == null || request.getSoftwareId() == null || request.getKeyId() == null) {
-            return badRequest("Json body must contain fields: [org_id, software_id, key_id]");
+    public ResponseEntity<Object> revokeCert(@RequestBody RevokeCertRequest request) {
+        if (request.orgId() == null || request.softwareId() == null || request.keyId() == null) {
+            throw new IllegalArgumentException("Json body must contain fields: [org_id, software_id, key_id]");
         }
-        softwareJwksService.removeCertificate(request.getOrgId(), request.getSoftwareId(), request.getKeyId());
+        softwareJwksService.removeCertificate(request.orgId(), request.softwareId(), request.keyId());
         return ResponseEntity.ok().build();
     }
 
-    // --- Helpers ---
-
-    @SuppressWarnings("unchecked")
-    private ResponseEntity<String> getCertAsPem(String jwksJson, String keyUse) {
-        JWKSet jwks;
-        try {
-            Map<String, Object> jwksMap = objectMapper.readValue(jwksJson, Map.class);
-            jwks = JWKSet.parse(new JsonValue(jwksMap));
-        } catch (Exception e) {
-            return badRequest("Couldn't parse request body as JWK set");
-        }
-
-        JWK key = jwks.getJWKsAsList().stream()
-                .filter(k -> keyUse.equals(k.getUse()))
-                .findFirst()
-                .orElse(null);
-
-        if (key == null) {
-            return badRequest("Couldn't find " + keyUse + " key in JWK set");
-        }
-
-        try {
-            List<String> x5c = key.getX509Chain();
-            if (x5c == null || x5c.isEmpty()) {
-                return badRequest("Couldn't find cert chain in " + keyUse + " jwk");
-            }
-
-            // Use ForgeRock RsaJWK to extract the private key directly
-            PrivateKey privateKey = ((RsaJWK) key).toRSAPrivateKey();
-
-            StringBuilder pem = new StringBuilder();
-            for (String certBase64 : x5c) {
-                byte[] derBytes = org.forgerock.util.encode.Base64.decode(certBase64);
-                X509Certificate cert = (X509Certificate) CertificateFactory.getInstance("X.509")
-                        .generateCertificate(new ByteArrayInputStream(derBytes));
-                pem.append(toPem(cert));
-            }
-            pem.append(toPem(privateKey));
-
-            return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(pem.toString());
-        } catch (Exception e) {
-            logger.error("Failed to convert JWK to PEM", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\":\"Failed to convert JWK to PEM\"}");
-        }
-    }
-
-    private static String toPem(Object obj) throws Exception {
-        StringWriter writer = new StringWriter();
-        try (JcaPEMWriter pemWriter = new JcaPEMWriter(writer)) {
-            pemWriter.writeObject(obj);
-        }
-        return writer.toString();
-    }
-
-    private static X509Certificate parsePemCertificate(String pem) throws Exception {
-        String stripped = pem.replaceAll("-----BEGIN CERTIFICATE-----", "")
-                .replaceAll("-----END CERTIFICATE-----", "")
-                .replaceAll("\\s", "");
-        byte[] decoded = Base64.getDecoder().decode(stripped);
-        return (X509Certificate) CertificateFactory.getInstance("X.509")
-                .generateCertificate(new ByteArrayInputStream(decoded));
-    }
-
-    private static Map<String, String> parseDn(String dn) {
-        Map<String, String> result = new HashMap<>();
-        try {
-            LdapName ln = new LdapName(dn);
-            for (Rdn rdn : ln.getRdns()) {
-                String type = rdn.getType();
-                if (("OID." + OID_ORGANIZATIONAL_IDENTIFIER).equals(type)) {
-                    type = "OI";
-                }
-                result.put(type, String.valueOf(rdn.getValue()));
-            }
-        } catch (Exception e) {
-            // Return partial result
-        }
-        return result;
-    }
-
-    private static ResponseEntity<String> badRequest(String message) {
-        return ResponseEntity.badRequest()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body("{\"error\":\"" + message + "\"}");
-    }
 }
+

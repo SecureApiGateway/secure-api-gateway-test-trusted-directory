@@ -98,6 +98,13 @@ public class CertificateIssuerService {
         }
     }
 
+    /**
+     * Constructs a new {@code CertificateIssuerService} backed by the given CA certificate and private key.
+     *
+     * @param caCertificate       the CA certificate used to sign issued certificates
+     * @param caPrivateKey        the private key of the CA used to sign issued certificates
+     * @param certificateSigningAlg the JCA algorithm name used to sign certificates (e.g. {@code "SHA256withRSA"})
+     */
     public CertificateIssuerService(X509Certificate caCertificate, PrivateKey caPrivateKey, String certificateSigningAlg) {
         this.caCertificate = requireNonNull(caCertificate, "caCertificate must be provided");
         this.caPrivateKey = requireNonNull(caPrivateKey, "caPrivateKey must be provided");
@@ -105,14 +112,41 @@ public class CertificateIssuerService {
         this.provider = BC_PROVIDER;
     }
 
+    /**
+     * Issues a signing certificate (key use {@code sig}) for the given organisation and wraps it in a ForgeRock JWK
+     * containing the full key pair and X.509 certificate chain.
+     *
+     * @param organisationId   the unique identifier of the organisation (embedded in the certificate subject OID 2.5.4.97)
+     * @param organisationName the display name of the organisation (embedded as the certificate CN)
+     * @param options          algorithm, key size, and validity options for the certificate
+     * @return a private ForgeRock JWK ({@code use=sig}) containing the generated key pair and certificate
+     */
     public JWK issueSigningCertificate(String organisationId, String organisationName, CertificateOptions options) {
         return issueCertificate(SIGNING_KEY_USE, organisationId, organisationName, options);
     }
 
+    /**
+     * Issues a transport/TLS certificate (key use {@code tls}) for the given organisation and wraps it in a ForgeRock
+     * JWK containing the full key pair and X.509 certificate chain.
+     *
+     * @param organisationId   the unique identifier of the organisation
+     * @param organisationName the display name of the organisation
+     * @param options          algorithm, key size, and validity options for the certificate
+     * @return a private ForgeRock JWK ({@code use=tls}) containing the generated key pair and certificate
+     */
     public JWK issueTransportCertificate(String organisationId, String organisationName, CertificateOptions options) {
         return issueCertificate(TRANSPORT_KEY_USE, organisationId, organisationName, options);
     }
 
+    /**
+     * Issues an X.509 certificate signed by the CA and wraps it in a ForgeRock JWK.
+     *
+     * @param keyUse           the intended key use ({@code "sig"} or {@code "tls"})
+     * @param organisationId   the unique identifier of the organisation
+     * @param organisationName the display name of the organisation
+     * @param options          algorithm, key size, and validity options for the certificate
+     * @return a private ForgeRock JWK containing the generated key pair and certificate
+     */
     protected JWK issueCertificate(String keyUse, String organisationId, String organisationName, CertificateOptions options) {
         if (keyUse == null || keyUse.isBlank()) throw new IllegalArgumentException("keyUse must be provided");
         requireNonNull(organisationId, "organisationId must be provided");
@@ -132,19 +166,19 @@ public class CertificateIssuerService {
     }
 
     private void validateCertificateOptions(CertificateOptions options) {
-        if (!SUPPORTED_ALG.contains(options.getJwsAlgorithm())) {
-            throw new IllegalArgumentException("JwsAlgorithm not supported: " + options.getJwsAlgorithm());
+        if (!SUPPORTED_ALG.contains(options.jwsAlgorithm())) {
+            throw new IllegalArgumentException("JwsAlgorithm not supported: " + options.jwsAlgorithm());
         }
-        if (options.getCertValidityDays() <= 0) {
+        if (options.certValidityDays() <= 0) {
             throw new IllegalArgumentException("certValidityDays must be positive");
         }
     }
 
     private KeyPair generateKeyPair(CertificateOptions options) {
         try {
-            final JwsAlgorithmType algorithmType = options.getJwsAlgorithm().getAlgorithmType();
+            final JwsAlgorithmType algorithmType = options.jwsAlgorithm().getAlgorithmType();
             final KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(algorithmType.name(), provider);
-            keyPairGenerator.initialize(options.getKeySize());
+            keyPairGenerator.initialize(options.keySize());
             return keyPairGenerator.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Failed to generate keyPair", e);
@@ -161,7 +195,7 @@ public class CertificateIssuerService {
                 return RsaJWK.builder(rsaPub)
                         .rsaPrivateCrtKey((RSAPrivateCrtKey) keyPair.getPrivate())
                         .keyId(UUID.randomUUID().toString())
-                        .algorithm(options.getJwsAlgorithm())
+                        .algorithm(options.jwsAlgorithm())
                         .x509Chain(Collections.singletonList(x5c))
                         .x509ThumbprintS256(x5t)
                         .keyUse(keyUse)
@@ -170,7 +204,7 @@ public class CertificateIssuerService {
                 return EcJWK.builder(ecPub)
                         .privateKey((ECPrivateKey) keyPair.getPrivate())
                         .keyId(UUID.randomUUID().toString())
-                        .algorithm(options.getJwsAlgorithm())
+                        .algorithm(options.jwsAlgorithm())
                         .x509Chain(Collections.singletonList(x5c))
                         .x509ThumbprintS256(x5t)
                         .keyUse(keyUse)
@@ -190,7 +224,7 @@ public class CertificateIssuerService {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         Date startDate = calendar.getTime();
-        calendar.add(Calendar.DATE, options.getCertValidityDays());
+        calendar.add(Calendar.DATE, options.certValidityDays());
         Date endDate = calendar.getTime();
 
         X500Name issuedCertSubject = new X500Name("CN=" + organisationName + ",OID." + OID_ORGANIZATIONAL_IDENTIFIER + "=" + organisationId);

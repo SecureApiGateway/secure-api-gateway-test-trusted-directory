@@ -17,13 +17,14 @@ package com.forgerock.sapi.gateway.test.trusted.directory.dto;
 
 import java.util.Map;
 
-public class SignClaimsRequest {
-
-    private Map<String, Object> claims;
-    private Map<String, Object> jwks;
-
-    public Map<String, Object> getClaims() { return claims; }
-    public void setClaims(Map<String, Object> claims) { this.claims = claims; }
-    public Map<String, Object> getJwks() { return jwks; }
-    public void setJwks(Map<String, Object> jwks) { this.jwks = jwks; }
+/**
+ * Request body for the {@code POST /jwkms/apiclient/signclaims} endpoint.
+ *
+ * @param claims the JWT claims to sign
+ * @param jwks   a JWKS containing the private signing key (a key with {@code use=sig} is selected automatically)
+ */
+public record SignClaimsRequest(
+        Map<String, Object> claims,
+        Map<String, Object> jwks
+) {
 }

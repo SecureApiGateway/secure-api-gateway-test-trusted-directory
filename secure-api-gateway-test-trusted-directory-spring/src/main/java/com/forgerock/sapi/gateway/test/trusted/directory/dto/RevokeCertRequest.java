@@ -17,21 +17,16 @@ package com.forgerock.sapi.gateway.test.trusted.directory.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class RevokeCertRequest {
-
-    @JsonProperty("org_id")
-    private String orgId;
-
-    @JsonProperty("software_id")
-    private String softwareId;
-
-    @JsonProperty("key_id")
-    private String keyId;
-
-    public String getOrgId() { return orgId; }
-    public void setOrgId(String orgId) { this.orgId = orgId; }
-    public String getSoftwareId() { return softwareId; }
-    public void setSoftwareId(String softwareId) { this.softwareId = softwareId; }
-    public String getKeyId() { return keyId; }
-    public void setKeyId(String keyId) { this.keyId = keyId; }
+/**
+ * Request body for the {@code POST /jwkms/apiclient/jwks/revokecert} endpoint.
+ *
+ * @param orgId      the unique identifier of the owning organisation
+ * @param softwareId the unique identifier of the software whose key should be revoked
+ * @param keyId      the {@code kid} of the key to remove from the software's JWKS
+ */
+public record RevokeCertRequest(
+        @JsonProperty("org_id") String orgId,
+        @JsonProperty("software_id") String softwareId,
+        @JsonProperty("key_id") String keyId
+) {
 }

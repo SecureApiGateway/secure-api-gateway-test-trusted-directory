@@ -15,14 +15,10 @@
  */
 package com.forgerock.sapi.gateway.test.trusted.directory.service;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.security.KeyStore;
+import static java.util.Objects.requireNonNull;
+
 import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.util.Collections;
 import java.util.Map;
 
 import org.forgerock.json.jose.jwk.JWK;
@@ -33,48 +29,37 @@ import org.forgerock.json.jose.jwt.JwtClaimsSet;
 import org.forgerock.json.jose.jws.JwsAlgorithm;
 import org.forgerock.json.jose.jws.SigningManager;
 import org.forgerock.json.jose.jws.handlers.SigningHandler;
-import org.springframework.stereotype.Service;
-
-import com.forgerock.sapi.gateway.test.trusted.directory.config.TrustedDirectoryProperties;
 
 /**
  * Service that signs Software Statement Assertions (SSAs) using the directory's own signing key.
  * Also exposes the directory's public JWKS for signature verification.
  */
-@Service
 public class SsaSigningService {
 
     private final PrivateKey signingPrivateKey;
     private final String keyId;
     private final JWKSet publicJwks;
 
-    public SsaSigningService(TrustedDirectoryProperties properties) throws Exception {
-        TrustedDirectoryProperties.SigningProperties signing = properties.getSigning();
-        KeyStore keyStore = KeyStore.getInstance(signing.getKeystoreType());
-        try (InputStream is = new FileInputStream(signing.getKeystorePath())) {
-            keyStore.load(is, signing.getKeystorePassword().toCharArray());
-        }
-        KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(
-                signing.getKeyAlias(),
-                new KeyStore.PasswordProtection(signing.getKeystoreKeyPassword().toCharArray()));
-        if (entry == null) {
-            throw new IllegalStateException("Signing key alias '" + signing.getKeyAlias() + "' not found in keystore");
-        }
-        this.signingPrivateKey = entry.getPrivateKey();
-        X509Certificate cert = (X509Certificate) entry.getCertificateChain()[0];
-
-        this.keyId = cert.getSerialNumber().toString(16);
-
-        JWK publicJwk = RsaJWK.builder((RSAPublicKey) cert.getPublicKey())
-                .keyId(keyId)
-                .keyUse("sig")
-                .algorithm(JwsAlgorithm.PS256)
-                .build();
-        this.publicJwks = new JWKSet(Collections.singletonList(publicJwk));
+    /**
+     * Constructs the service with the directory's pre-loaded signing key and public JWKS.
+     * Infrastructure concerns (keystore loading) are handled by the Spring configuration.
+     *
+     * @param signingPrivateKey the directory's RSA private key used to sign SSA JWTs
+     * @param keyId             the key identifier ({@code kid}) embedded in JWT headers
+     * @param publicJwks        the public JWKS exposing the corresponding RSA public key
+     */
+    public SsaSigningService(PrivateKey signingPrivateKey, String keyId, JWKSet publicJwks) {
+        this.signingPrivateKey = requireNonNull(signingPrivateKey, "signingPrivateKey must be provided");
+        this.keyId = requireNonNull(keyId, "keyId must be provided");
+        this.publicJwks = requireNonNull(publicJwks, "publicJwks must be provided");
     }
 
     /**
-     * Signs an SSA payload using the directory's private key (PS256).
+     * Signs a Software Statement Assertion (SSA) JWT using the directory's RSA private key (PS256 algorithm).
+     *
+     * @param claimsMap the claims to include in the SSA JWT payload
+     * @return the compact-serialised signed JWT string
+     * @throws Exception if signing fails
      */
     public String sign(Map<String, Object> claimsMap) throws Exception {
         SigningHandler signingHandler = new SigningManager().newRsaSigningHandler(signingPrivateKey);
@@ -90,7 +75,13 @@ public class SsaSigningService {
     }
 
     /**
-     * Signs claims using the private key extracted from the provided JWK (ForgeRock native, no Nimbus).
+     * Signs the given claims using the RSA private key extracted from the provided ForgeRock JWK (PS256 algorithm).
+     * The key ID ({@code kid}) of the signing JWK is embedded in the JWT header.
+     *
+     * @param claimsMap  the claims to include in the JWT payload
+     * @param signingJwk a private {@link RsaJWK} whose private key will be used to sign the JWT
+     * @return the compact-serialised signed JWT string
+     * @throws Exception if signing fails or the JWK does not contain a private RSA key
      */
     public String signClaims(Map<String, Object> claimsMap, JWK signingJwk) throws Exception {
         RSAPrivateKey privateKey = ((RsaJWK) signingJwk).toRSAPrivateKey();
@@ -106,6 +97,11 @@ public class SsaSigningService {
                 .build();
     }
 
+    /**
+     * Returns the directory's public JWKS, containing the RSA public key used to verify SSA signatures.
+     *
+     * @return the public JWKS of the directory
+     */
     public JWKSet getPublicJwks() {
         return publicJwks;
     }
