@@ -1,14 +1,24 @@
 ---
-apiVersion: {{ .Values.configmap.apiVersion }}
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Chart.Name }}-config
 data:
-  IG_TEST_DIRECTORY_ISSUER_NAME: {{ .Values.configmap.igTestDirectoryIssuerName }}
-  IG_TEST_DIRECTORY_CA_KEYSTORE_ALIAS: {{ .Values.configmap.igTestDirectoryCAKeystoreAlias }}
-  IG_TEST_DIRECTORY_CA_KEYSTORE_PATH: {{ .Values.configmap.igTestDirectoryCAKeystorePath }}
-  IG_TEST_DIRECTORY_CA_KEYSTORE_TYPE: {{ .Values.configmap.igTestDirectoryCAKeystoreType }}
-  IG_TEST_DIRECTORY_SIGNING_KEYSTORE_ALIAS: {{ .Values.configmap.igTestDirectorySigningKeystoreAlias }}
-  IG_TEST_DIRECTORY_SIGNING_KEYSTORE_PATH: {{ .Values.configmap.igTestDirectorySigningKeystorePath }}
-  IG_TEST_DIRECTORY_SIGNING_KEYSTORE_TYPE: {{ .Values.configmap.igTestDirectorySigningKeystoreType }}
-  IG_TEST_DIRECTORY_FQDN: {{ .Values.configmap.igTestDirectoryFQDN }}
+  application.yml: |
+    trusted-directory:
+      issuer-name: {{ .Values.config.issuerName }}
+      fqdn: {{ .Values.config.fqdn }}
+      signing:
+        keystore-path: {{ .Values.config.signing.keystorePath }}
+        keystore-type: {{ .Values.config.signing.keystoreType }}
+        key-alias: {{ .Values.config.signing.keystoreAlias }}
+        # Passwords are injected at runtime from the Secret via env vars
+        keystore-pwd: ${TTD_SIGNING_KEYSTORE_PWD}
+        keystore-key-pwd: ${TTD_SIGNING_KEYSTORE_KEY_PWD}
+      ca:
+        keystore-path: {{ .Values.config.ca.keystorePath }}
+        keystore-type: {{ .Values.config.ca.keystoreType }}
+        key-alias: {{ .Values.config.ca.keystoreAlias }}
+        # Passwords are injected at runtime from the Secret via env vars
+        keystore-pwd: ${TTD_CA_KEYSTORE_PWD}
+        keystore-key-pwd: ${TTD_CA_KEYSTORE_KEY_PWD}

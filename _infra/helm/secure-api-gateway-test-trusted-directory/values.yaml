@@ -1,21 +1,25 @@
 ---
-configmap:
-  # Version of the Kubernetes API to use
-  apiVersion: "v1"
-  igTestDirectoryCAKeystoreAlias: "ca"
-  igTestDirectoryCAKeystorePath: "/secrets/test-trusted-directory/test-trusted-directory-keystore.p12"
-  igTestDirectoryCAKeystoreType: "PKCS12"
-  igTestDirectoryFQDN: "replace-me"
-  igTestDirectoryIssuerName: "test-publisher"
-  igTestDirectorySigningKeystoreAlias: "jwt-signer"
-  igTestDirectorySigningKeystorePath: "/secrets/test-trusted-directory/test-trusted-directory-keystore.p12"
-  igTestDirectorySigningKeystoreType: "PKCS12"
+config:
+  fqdn: "replace-me"
+  issuerName: "test-publisher"
+  ca:
+    keystoreAlias: "ca"
+    keystorePath: "/var/ttd/secrets/test-trusted-directory/test-trusted-directory-keystore.p12"
+    keystoreType: "PKCS12"
+    # Base64-encoded values — use: echo -n 'your-password' | base64
+    keystoreKeyPwd: "replace-me"
+    keystorePwd: "replace-me"
+  signing:
+    keystoreAlias: "jwt-signer"
+    keystorePath: "/var/ttd/secrets/test-trusted-directory/test-trusted-directory-keystore.p12"
+    keystoreType: "PKCS12"
+    # Base64-encoded values — use: echo -n 'your-password' | base64
+    keystoreKeyPwd: "replace-me"
+    keystorePwd: "replace-me"
 
 deployment:
   # Affinity Configuration
   affinity: {}
-  # Version of the Kubernetes API to use
-  apiVersion: "apps/v1"
   # Container port exposed by a pod or deployment
   containerPort: 8080
   containerAdminPort: 8085
@@ -33,7 +37,7 @@ deployment:
   livenessProbe:
     failureThreshold: 5
     initialDelaySeconds: 60
-    path: "/health/live"
+    path: "/actuator/health/liveness"
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
@@ -42,7 +46,7 @@ deployment:
     failureThreshold: 3
     initialDelaySeconds: 30
     periodSeconds: 5
-    path: "/health/ready"
+    path: "/actuator/health/readiness"
     successThreshold: 1
     timeoutSeconds: 5
   # How many pods are to run in the deployment
@@ -62,8 +66,6 @@ deployment:
     maxSurge: "50%"
     maxUnavailable: "25%"
   strategyType: "RollingUpdate"
-  ig:
-    instanceDir: "/var/gateway"
 
 ingress:
   annotations:
@@ -73,17 +75,7 @@ ingress:
     host: "replace-me"
     secretName: test-trusted-directory-tls-cert
 
-secrets:
-  igMetricsPassword: "replace-me"
-  igMetricsUsername: "replace-me"
-  igTestDirectoryCAKeystoreKeypass: "replace-me"
-  igTestDirectoryCAKeystoreStorepass: "replace-me"
-  igTestDirectorySigningKeystoreKeypass: "replace-me"
-  igTestDirectorySigningKeystoreStorepass: "replace-me"
-
 service:
-  # Version of the Kubernetes API to use
-  apiVersion: "v1"
   # Container port exposed by a pod or deployment
   port: 80
   # Protocol the service will use
