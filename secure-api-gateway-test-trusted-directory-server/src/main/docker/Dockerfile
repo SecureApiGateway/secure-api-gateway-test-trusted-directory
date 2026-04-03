@@ -14,14 +14,16 @@
 # limitations under the License.
 #
 
-FROM ${docker.openig-image}
-# Switching back to forgerock user, app will run as this
-USER forgerock
-# Create dir where secrets can be mounted into
-RUN mkdir ${IG_INSTANCE_DIR}/secrets
+FROM gcr.io/forgerock-io/java-21:latest
+ENV TTD_INSTALL_DIR=/opt/ttd
+ENV TTD_INSTANCE_DIR=/var/ttd
 
-# Copy all config files into the docker image.
-COPY --chown=forgerock:root configuration/bin/import-pem-certs.sh /home/forgerock
-COPY --chown=forgerock:root dependencies ${IG_INSTANCE_DIR}/extra
-COPY --chown=forgerock:root configuration/scripts ${IG_INSTANCE_DIR}/scripts
-COPY --chown=forgerock:root configuration/config ${IG_INSTANCE_DIR}/config
+RUN mkdir -p ${TTD_INSTALL_DIR} \
+    && mkdir -p ${TTD_INSTANCE_DIR} \
+    && chown -R forgerock:root ${TTD_INSTALL_DIR} ${TTD_INSTANCE_DIR} \
+    && chmod -R g+rwx ${TTD_INSTALL_DIR} ${TTD_INSTANCE_DIR}
+
+COPY --chown=forgerock:root maven/${project.build.finalName}.jar ${TTD_INSTALL_DIR}/server.jar
+
+USER forgerock
+ENTRYPOINT exec java -jar ${TTD_INSTALL_DIR}/server.jar

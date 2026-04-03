@@ -5,3 +5,5 @@
 build/
 target/
 pom.xml.versionsBackup
+*.iml
+.python-version
