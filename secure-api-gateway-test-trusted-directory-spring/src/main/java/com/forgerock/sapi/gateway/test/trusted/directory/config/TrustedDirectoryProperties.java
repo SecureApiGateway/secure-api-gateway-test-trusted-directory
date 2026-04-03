@@ -16,86 +16,89 @@
 package com.forgerock.sapi.gateway.test.trusted.directory.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
+/**
+ * Externalized configuration properties for the Test Trusted Directory, bound from the {@code trusted-directory}
+ * prefix in {@code application.yml} (or environment variables via Spring's relaxed binding).
+ *
+ * @param issuerName the {@code iss} claim value used in signed SSA JWTs
+ * @param fqdn       fully-qualified domain name used to build the software JWKS endpoint URI
+ * @param signing    properties for the directory's JWT signing keystore
+ * @param ca         properties for the Certificate Authority keystore
+ * @param storage    properties for the JSON file-based JWKS persistence
+ * @param cert       default certificate generation settings
+ */
 @ConfigurationProperties(prefix = "trusted-directory")
-public class TrustedDirectoryProperties {
+public record TrustedDirectoryProperties(
+        @DefaultValue("SAPI-G Test Trusted Directory") String issuerName,
+        @DefaultValue("localhost:8080") String fqdn,
+        SigningProperties signing,
+        CaProperties ca,
+        @DefaultValue StorageProperties storage,
+        @DefaultValue CertProperties cert) {
 
-    private String issuerName = "SAPI-G Test Trusted Directory";
-    private String fqdn = "localhost:8080";
+    /**
+     * Properties for the directory's JWT signing keystore.
+     *
+     * @param keystorePath    path to the PKCS12 keystore file
+     * @param keystoreType    keystore type (default: {@code PKCS12})
+     * @param keystorePwd    keystore store password
+     * @param keystoreKeyPwd optional key-specific password; falls back to {@code keystorePwd} if absent
+     * @param keyAlias        alias of the signing key entry (default: {@code jwt-signing})
+     */
+    public record SigningProperties(
+            String keystorePath,
+            @DefaultValue("PKCS12") String keystoreType,
+            String keystorePwd,
+            String keystoreKeyPwd,
+            @DefaultValue("jwt-signing") String keyAlias) {
 
-    private SigningProperties signing = new SigningProperties();
-    private CaProperties ca = new CaProperties();
-    private StorageProperties storage = new StorageProperties();
-    private CertProperties cert = new CertProperties();
-
-    public String getIssuerName() { return issuerName; }
-    public void setIssuerName(String issuerName) { this.issuerName = issuerName; }
-    public String getFqdn() { return fqdn; }
-    public void setFqdn(String fqdn) { this.fqdn = fqdn; }
-    public SigningProperties getSigning() { return signing; }
-    public void setSigning(SigningProperties signing) { this.signing = signing; }
-    public CaProperties getCa() { return ca; }
-    public void setCa(CaProperties ca) { this.ca = ca; }
-    public StorageProperties getStorage() { return storage; }
-    public void setStorage(StorageProperties storage) { this.storage = storage; }
-    public CertProperties getCert() { return cert; }
-    public void setCert(CertProperties cert) { this.cert = cert; }
-
-    public static class SigningProperties {
-        private String keystorePath;
-        private String keystoreType = "PKCS12";
-        private String keystorePassword;
-        private String keystoreKeyPassword;
-        private String keyAlias = "jwt-signing";
-
-        public String getKeystorePath() { return keystorePath; }
-        public void setKeystorePath(String keystorePath) { this.keystorePath = keystorePath; }
-        public String getKeystoreType() { return keystoreType; }
-        public void setKeystoreType(String keystoreType) { this.keystoreType = keystoreType; }
-        public String getKeystorePassword() { return keystorePassword; }
-        public void setKeystorePassword(String keystorePassword) { this.keystorePassword = keystorePassword; }
-        public String getKeystoreKeyPassword() { return keystoreKeyPassword != null ? keystoreKeyPassword : keystorePassword; }
-        public void setKeystoreKeyPassword(String keystoreKeyPassword) { this.keystoreKeyPassword = keystoreKeyPassword; }
-        public String getKeyAlias() { return keyAlias; }
-        public void setKeyAlias(String keyAlias) { this.keyAlias = keyAlias; }
+        /** Normalises {@code keystoreKeyPwd}: falls back to {@code keystorePwd} when absent. */
+        public SigningProperties {
+            keystoreKeyPwd = keystoreKeyPwd != null ? keystoreKeyPwd : keystorePwd;
+        }
     }
 
-    public static class CaProperties {
-        private String keystorePath;
-        private String keystoreType = "PKCS12";
-        private String keystorePassword;
-        private String keystoreKeyPassword;
-        private String keyAlias = "ca";
-        private String certSigningAlg = "SHA256withRSA";
+    /**
+     * Properties for the Certificate Authority (CA) keystore used to issue software certificates.
+     *
+     * @param keystorePath    path to the PKCS12 keystore file
+     * @param keystoreType    keystore type (default: {@code PKCS12})
+     * @param keystorePwd    keystore store password
+     * @param keystoreKeyPwd optional key-specific password; falls back to {@code keystorePwd} if absent
+     * @param keyAlias        alias of the CA key entry (default: {@code ca})
+     * @param certSigningAlg  JCA algorithm used to sign issued certificates (default: {@code SHA256withRSA})
+     */
+    public record CaProperties(
+            String keystorePath,
+            @DefaultValue("PKCS12") String keystoreType,
+            String keystorePwd,
+            String keystoreKeyPwd,
+            @DefaultValue("ca") String keyAlias,
+            @DefaultValue("SHA256withRSA") String certSigningAlg) {
 
-        public String getKeystorePath() { return keystorePath; }
-        public void setKeystorePath(String keystorePath) { this.keystorePath = keystorePath; }
-        public String getKeystoreType() { return keystoreType; }
-        public void setKeystoreType(String keystoreType) { this.keystoreType = keystoreType; }
-        public String getKeystorePassword() { return keystorePassword; }
-        public void setKeystorePassword(String keystorePassword) { this.keystorePassword = keystorePassword; }
-        public String getKeystoreKeyPassword() { return keystoreKeyPassword != null ? keystoreKeyPassword : keystorePassword; }
-        public void setKeystoreKeyPassword(String keystoreKeyPassword) { this.keystoreKeyPassword = keystoreKeyPassword; }
-        public String getKeyAlias() { return keyAlias; }
-        public void setKeyAlias(String keyAlias) { this.keyAlias = keyAlias; }
-        public String getCertSigningAlg() { return certSigningAlg; }
-        public void setCertSigningAlg(String certSigningAlg) { this.certSigningAlg = certSigningAlg; }
+        /** Normalises {@code keystoreKeyPwd}: falls back to {@code keystorePwd} when absent. */
+        public CaProperties {
+            keystoreKeyPwd = keystoreKeyPwd != null ? keystoreKeyPwd : keystorePwd;
+        }
     }
 
-    public static class StorageProperties {
-        private String filePath = "/var/data/trusted-directory-jwks.json";
+    /**
+     * Properties for the JSON file-based JWKS storage.
+     *
+     * @param filePath path to the JSON store file (default: {@code /var/ttd/trusted-directory-jwks.json})
+     */
+    public record StorageProperties(
+            @DefaultValue("/var/ttd/trusted-directory-jwks.json") String filePath) {}
 
-        public String getFilePath() { return filePath; }
-        public void setFilePath(String filePath) { this.filePath = filePath; }
-    }
-
-    public static class CertProperties {
-        private int keySize = 2048;
-        private int validityDays = 365;
-
-        public int getKeySize() { return keySize; }
-        public void setKeySize(int keySize) { this.keySize = keySize; }
-        public int getValidityDays() { return validityDays; }
-        public void setValidityDays(int validityDays) { this.validityDays = validityDays; }
-    }
+    /**
+     * Default certificate generation settings.
+     *
+     * @param keySize     RSA key size in bits (default: {@code 2048})
+     * @param validityDays certificate validity in days (default: {@code 365})
+     */
+    public record CertProperties(
+            @DefaultValue("2048") int keySize,
+            @DefaultValue("365") int validityDays) {}
 }
