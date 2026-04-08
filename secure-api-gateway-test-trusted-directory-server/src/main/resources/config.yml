@@ -1,0 +1,21 @@
+server:
+  port: 8080
+
+trustedDirectory:
+  issuerName: SAPI-G Test Trusted Directory
+  fqdn: localhost:8080
+
+  signing:
+    keystoreType: PKCS12
+    keyAlias: jwt-signing
+
+  ca:
+    keystoreType: PKCS12
+    keyAlias: ca
+    certSigningAlg: SHA256withRSA
+
+  storageFilePath: /var/ttd/trusted-directory-jwks.json
+
+  cert:
+    keySize: 2048
+    validityDays: 365

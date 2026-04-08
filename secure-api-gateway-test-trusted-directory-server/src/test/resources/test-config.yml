@@ -1,0 +1,23 @@
+server:
+  port: 9090
+
+trustedDirectory:
+  issuerName: Test Issuer
+  fqdn: test.example.com:9090
+
+  signing:
+    keystoreType: PKCS12
+    keystorePath: /test/signing.p12
+    keyAlias: test-signing
+
+  ca:
+    keystoreType: PKCS12
+    keystorePath: /test/ca.p12
+    keyAlias: test-ca
+    certSigningAlg: SHA256withRSA
+
+  storageFilePath: /test/jwks.json
+
+  cert:
+    keySize: 2048
+    validityDays: 30
