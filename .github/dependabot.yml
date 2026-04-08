@@ -10,6 +10,6 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: "docker"
-    directory: "/secure-api-gateway-test-trusted-directory-docker"
+    directory: "/secure-api-gateway-test-trusted-directory-server/src/main/docker"
     schedule:
       interval: "weekly"
