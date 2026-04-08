@@ -1,24 +1,28 @@
 ---
-configmap:
-  # Version of the Kubernetes API to use
-  apiVersion: "v1"
-  igTestDirectoryCAKeystoreAlias: "ca"
-  igTestDirectoryCAKeystorePath: "/secrets/test-trusted-directory/test-trusted-directory-keystore.p12"
-  igTestDirectoryCAKeystoreType: "PKCS12"
-  igTestDirectoryFQDN: "replace-me"
-  igTestDirectoryIssuerName: "test-publisher"
-  igTestDirectorySigningKeystoreAlias: "jwt-signer"
-  igTestDirectorySigningKeystorePath: "/secrets/test-trusted-directory/test-trusted-directory-keystore.p12"
-  igTestDirectorySigningKeystoreType: "PKCS12"
+config:
+  fqdn: "replace-me"
+  issuerName: "test-publisher"
+  storageFilePath: "/var/ttd/data/trusted-directory-jwks.json"
+  ca:
+    keystoreAlias: "ca"
+    keystorePath: "/var/ttd/secrets/test-trusted-directory/test-trusted-directory-keystore.p12"
+    keystoreType: "PKCS12"
+    # Base64-encoded values — use: echo -n 'your-password' | base64
+    keystoreKeyPwd: "replace-me"
+    keystorePwd: "replace-me"
+  signing:
+    keystoreAlias: "jwt-signer"
+    keystorePath: "/var/ttd/secrets/test-trusted-directory/test-trusted-directory-keystore.p12"
+    keystoreType: "PKCS12"
+    # Base64-encoded values — use: echo -n 'your-password' | base64
+    keystoreKeyPwd: "replace-me"
+    keystorePwd: "replace-me"
 
 deployment:
   # Affinity Configuration
   affinity: {}
-  # Version of the Kubernetes API to use
-  apiVersion: "apps/v1"
   # Container port exposed by a pod or deployment
   containerPort: 8080
-  containerAdminPort: 8085
   image:
     # Repo And Tag are not provided here as the value for the repo will be unique for each user/customer as they will be building their own docker images and push to their own Container Registries 
     # The tag will use the .AppVersion as the default, meaning that customers who want to install V1 will get V1.0.0 of the software - you may supply a hard coded version if required  
@@ -33,7 +37,7 @@ deployment:
   livenessProbe:
     failureThreshold: 5
     initialDelaySeconds: 60
-    path: "/health/live"
+    path: "/health/liveness"
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
@@ -42,7 +46,7 @@ deployment:
     failureThreshold: 3
     initialDelaySeconds: 30
     periodSeconds: 5
-    path: "/health/ready"
+    path: "/health/readiness"
     successThreshold: 1
     timeoutSeconds: 5
   # How many pods are to run in the deployment
@@ -61,9 +65,20 @@ deployment:
   rollingUpdate:
     maxSurge: "50%"
     maxUnavailable: "25%"
-  strategyType: "RollingUpdate"
-  ig:
-    instanceDir: "/var/gateway"
+  strategyType: "Recreate"
+
+persistence:
+  # Enable persistent storage for the JWKS file. When true, a PVC is created and mounted in the container.
+  # Without persistence, generated JWKS are lost on pod restart.
+  enabled: true
+  # Size of the PersistentVolumeClaim
+  size: "100Mi"
+  # StorageClass to use. Empty string uses the cluster default StorageClass.
+  storageClassName: ""
+  # Access mode for the PVC. ReadWriteOnce is sufficient for single-replica deployments.
+  accessMode: ReadWriteOnce
+  # Mount path inside the container where the PVC is mounted
+  mountPath: "/var/ttd/data"
 
 ingress:
   annotations:
@@ -73,17 +88,7 @@ ingress:
     host: "replace-me"
     secretName: test-trusted-directory-tls-cert
 
-secrets:
-  igMetricsPassword: "replace-me"
-  igMetricsUsername: "replace-me"
-  igTestDirectoryCAKeystoreKeypass: "replace-me"
-  igTestDirectoryCAKeystoreStorepass: "replace-me"
-  igTestDirectorySigningKeystoreKeypass: "replace-me"
-  igTestDirectorySigningKeystoreStorepass: "replace-me"
-
 service:
-  # Version of the Kubernetes API to use
-  apiVersion: "v1"
   # Container port exposed by a pod or deployment
   port: 80
   # Protocol the service will use

@@ -39,7 +39,7 @@ spec:
             failureThreshold: {{ .Values.deployment.readinessProbe.failureThreshold }}
             httpGet:
               path: {{ .Values.deployment.readinessProbe.path }}
-              port: {{ .Values.deployment.containerAdminPort }}
+              port: {{ .Values.deployment.containerPort }}
             initialDelaySeconds: {{ .Values.deployment.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.deployment.readinessProbe.periodSeconds }}
             successThreshold: {{ .Values.deployment.readinessProbe.successThreshold }}
@@ -48,15 +48,22 @@ spec:
             failureThreshold: {{ .Values.deployment.livenessProbe.failureThreshold }}
             httpGet:
               path: {{ .Values.deployment.livenessProbe.path }}
-              port: {{ .Values.deployment.containerAdminPort }}
+              port: {{ .Values.deployment.containerPort }}
             initialDelaySeconds: {{ .Values.deployment.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.deployment.livenessProbe.periodSeconds }}
             successThreshold: {{ .Values.deployment.livenessProbe.successThreshold }}
             timeoutSeconds: {{ .Values.deployment.livenessProbe.timeoutSeconds }}
           volumeMounts:
             - name: test-trusted-directory-keystore
-              mountPath: {{ .Values.deployment.ig.instanceDir }}/secrets/test-trusted-directory
+              mountPath: /var/ttd/secrets/test-trusted-directory
               readOnly: true
+            - name: app-config
+              mountPath: /var/ttd/config
+              readOnly: true
+            {{- if .Values.persistence.enabled }}
+            - name: jwks-storage
+              mountPath: {{ .Values.persistence.mountPath }}
+            {{- end }}
           env:
             - name: NAMESPACE
               valueFrom:
@@ -66,11 +73,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            - name: TTD_CONFIG_PATH
+              value: "/var/ttd/config/config.yml"
           envFrom:
             - secretRef:
-                name: test-trusted-directory-secrets
-            - configMapRef:
-                name: test-trusted-directory-config
+                name: {{ .Chart.Name }}-secrets
           resources:
             {{- toYaml .Values.deployment.resources | nindent 12 }}
       volumes:
@@ -78,6 +85,14 @@ spec:
           secret:
             secretName: test-trusted-directory-keystore
             optional: false
+        - name: app-config
+          configMap:
+            name: {{ .Chart.Name }}-config
+        {{- if .Values.persistence.enabled }}
+        - name: jwks-storage
+          persistentVolumeClaim:
+            claimName: {{ .Chart.Name }}-jwks-storage
+        {{- end }}
       tolerations:
         - key: kubernetes.io/arch
           operator: Exists
