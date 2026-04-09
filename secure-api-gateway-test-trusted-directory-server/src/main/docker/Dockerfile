@@ -15,8 +15,8 @@
 #
 
 FROM gcr.io/forgerock-io/java-21:latest
-ENV TTD_INSTALL_DIR=/opt/ttd
-ENV TTD_INSTANCE_DIR=/var/ttd
+ENV TTD_INSTALL_DIR=/opt/trusted-directory
+ENV TTD_INSTANCE_DIR=/var/trusted-directory
 
 RUN mkdir -p ${TTD_INSTALL_DIR} \
     && mkdir -p ${TTD_INSTANCE_DIR} \

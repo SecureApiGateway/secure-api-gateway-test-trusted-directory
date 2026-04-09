@@ -55,10 +55,10 @@ spec:
             timeoutSeconds: {{ .Values.deployment.livenessProbe.timeoutSeconds }}
           volumeMounts:
             - name: test-trusted-directory-keystore
-              mountPath: /var/ttd/secrets/test-trusted-directory
+              mountPath: /var/trusted-directory/secrets/test-trusted-directory
               readOnly: true
             - name: app-config
-              mountPath: /var/ttd/config
+              mountPath: /var/trusted-directory/config
               readOnly: true
             {{- if .Values.persistence.enabled }}
             - name: jwks-storage
@@ -74,7 +74,7 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             - name: TTD_CONFIG_PATH
-              value: "/var/ttd/config/config.yml"
+              value: "/var/trusted-directory/config/config.yml"
           envFrom:
             - secretRef:
                 name: {{ .Chart.Name }}-secrets

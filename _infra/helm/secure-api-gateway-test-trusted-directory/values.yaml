@@ -2,17 +2,17 @@
 config:
   fqdn: "replace-me"
   issuerName: "test-publisher"
-  storageFilePath: "/var/ttd/data/trusted-directory-jwks.json"
+  storageFilePath: "/var/trusted-directory/data/trusted-directory-jwks.json"
   ca:
     keystoreAlias: "ca"
-    keystorePath: "/var/ttd/secrets/test-trusted-directory/test-trusted-directory-keystore.p12"
+    keystorePath: "/var/trusted-directory/secrets/test-trusted-directory/test-trusted-directory-keystore.p12"
     keystoreType: "PKCS12"
     # Base64-encoded values — use: echo -n 'your-password' | base64
     keystoreKeyPwd: "replace-me"
     keystorePwd: "replace-me"
   signing:
     keystoreAlias: "jwt-signer"
-    keystorePath: "/var/ttd/secrets/test-trusted-directory/test-trusted-directory-keystore.p12"
+    keystorePath: "/var/trusted-directory/secrets/test-trusted-directory/test-trusted-directory-keystore.p12"
     keystoreType: "PKCS12"
     # Base64-encoded values — use: echo -n 'your-password' | base64
     keystoreKeyPwd: "replace-me"
@@ -78,7 +78,7 @@ persistence:
   # Access mode for the PVC. ReadWriteOnce is sufficient for single-replica deployments.
   accessMode: ReadWriteOnce
   # Mount path inside the container where the PVC is mounted
-  mountPath: "/var/ttd/data"
+  mountPath: "/var/trusted-directory/data"
 
 ingress:
   annotations:

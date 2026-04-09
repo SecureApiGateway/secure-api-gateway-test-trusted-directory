@@ -14,7 +14,7 @@ trustedDirectory:
     keyAlias: ca
     certSigningAlg: SHA256withRSA
 
-  storageFilePath: /var/ttd/trusted-directory-jwks.json
+  storageFilePath: /var/trusted-directory/trusted-directory-jwks.json
 
   cert:
     keySize: 2048

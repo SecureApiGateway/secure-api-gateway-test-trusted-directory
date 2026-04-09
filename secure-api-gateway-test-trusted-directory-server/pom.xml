@@ -41,7 +41,7 @@
         <assertj.version>3.27.3</assertj.version>
         <!-- Docker properties -->
         <docker.image.name>sapig-test-trusted-directory</docker.image.name>
-        <main.class>com.forgerock.sapi.gateway.test.trusted.directory.TrustedDirectoryApplication</main.class>
+        <main.class>com.forgerock.sapi.gateway.directory.TrustedDirectoryApplication</main.class>
     </properties>
 
     <dependencyManagement>
