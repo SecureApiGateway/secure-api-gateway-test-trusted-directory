@@ -22,16 +22,17 @@
     <parent>
         <groupId>com.forgerock.sapi.gateway</groupId>
         <artifactId>secure-api-gateway-parent</artifactId>
-        <version>5.2.0-SNAPSHOT</version>
+        <version>5.2.0</version>
     </parent>
     <artifactId>secure-api-gateway-test-trusted-directory</artifactId>
+    <version>5.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>secure-api-gateway-test-trusted-directory</name>
     <description>Secure API Gateway Test Directory Component</description>
     <url>https://github.com/SecureApiGateway/secure-api-gateway-test-trusted-directory.git</url>
 
     <properties>
-        <secure-api-gateway.fapi-pep-as.version>5.2.0-SNAPSHOT</secure-api-gateway.fapi-pep-as.version>
+        <secure-api-gateway.fapi-pep-as.version>5.2.0</secure-api-gateway.fapi-pep-as.version>
     </properties>
 
     <scm>
